@@ -1,9 +1,7 @@
 import { IProduct } from "@/types";
 import React from "react";
 
-const Card: React.FC<{ product: IProduct }> = ({ product }) => {
-  const { name, price, description, imgUrl } = product;
-
+const Card: React.FC<IProduct> = ({ name, price, imgUrl }) => {
   return (
     <div className="w-full max-w-sm min-h-[210px] bg-white rounded-lg shadow-md transition-transform transform hover:scale-105 flex flex-col items-center p-4">
       <h3 className="text-xl font-bold text-gray-800 text-center">{name}</h3>
