@@ -59,8 +59,13 @@ export default function Navbar() {
           {user ? (
             <>
               <div className="flex items-center space-x-1">
-                <UserIcon className="w-5 h-5" />
-                <span className="text-sm">{user.name}</span>
+                <Link 
+        href="/perfil"
+        className="flex items-center space-x-1 hover:text-purple-300 transition-colors" 
+      >
+        <UserIcon className="w-5 h-5" />
+        <span className="text-sm">{user.name}</span>
+      </Link>
               </div>
               <button onClick={handleLogout} className="hover:text-red-400 transition duration-200" aria-label="Cerrar sesión">
                 <LogOut className="w-6 h-6" />
@@ -107,6 +112,7 @@ export default function Navbar() {
             {user ? (
               <>
                 <div className="flex items-center space-x-1">
+                
                   <UserIcon className="w-4 h-4" />
                   <span className="text-sm">{user.name}</span>
                 </div>
