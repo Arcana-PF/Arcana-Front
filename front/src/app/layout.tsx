@@ -19,8 +19,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={`${geistSans.variable} ${geistMono.variable} bg-gradient-to-b from-gray-100 to-gray-300 min-h-screen flex flex-col items-center justify-center antialiased`}>
         <NavBar />
         {children}
+        <Footer />
       </body>
-      <Footer />
+      
     </html>
   );
 }
