@@ -60,7 +60,7 @@ export default function Navbar() {
             <>
               <div className="flex items-center space-x-1">
                 <Link 
-        href="/perfil"
+        href="/profile"
         className="flex items-center space-x-1 hover:text-purple-300 transition-colors" 
       >
         <UserIcon className="w-5 h-5" />
