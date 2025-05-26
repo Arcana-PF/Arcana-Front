@@ -26,7 +26,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-purple-800 text-white w-full sticky top-0 z-50 shadow-md">
+    <nav className="bg-gradient-to-b from-purple-800 to-purple-900 text-white w-full sticky top-0 z-50 shadow-md">
       <div className="max-w-7xl mx-auto px-4 flex justify-between items-center h-24">
 
         {/* Logo */}
@@ -52,7 +52,7 @@ export default function Navbar() {
         {/* Iconos usuario desktop */}
         <div className="hidden md:flex items-center space-x-4">
           {/* Carrito protegido */}
-          <button onClick={handleCartClick} className="hover:text-white transition duration-200" aria-label="Carrito">
+          <button onClick={handleCartClick} className="hover:text-white transition duration-200 cursor-pointer" aria-label="Carrito">
             <ShoppingCart className="w-6 h-6" />
           </button>
 
@@ -67,7 +67,7 @@ export default function Navbar() {
         <span className="text-sm">{user.name}</span>
       </Link>
               </div>
-              <button onClick={handleLogout} className="hover:text-red-400 transition duration-200" aria-label="Cerrar sesión">
+              <button onClick={handleLogout} className="hover:text-red-400 transition duration-200 cursor-pointer" aria-label="Cerrar sesión">
                 <LogOut className="w-6 h-6" />
               </button>
             </>
