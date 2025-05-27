@@ -4,6 +4,8 @@ import { Formik, Form, Field, ErrorMessage } from "formik"
 import { Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { useRouter } from "next/navigation" 
+import Swal from "sweetalert2"
+
 
 const LoginComponent = () => {
   const [showPassword, setShowPassword] = useState(false)
@@ -49,10 +51,28 @@ const LoginComponent = () => {
                 name: storedUser.name,
                 email: storedUser.email,
               })
-              alert("¡Login exitoso!")
-              router.push("/") // 
+                                        Swal.fire({
+                icon: "success",
+                title: `¡Bienvenido, ${storedUser.name || "viajero"}!`,
+                text: "Has accedido al Círculo Arcano.",
+                confirmButtonColor: "#facc15",       // Amarillo brillante
+                iconColor: "#facc15",
+                background: "#0e0a1f",               // Fondo púrpura oscuro
+                color: "#e5e7eb",                    // Texto gris claro
+              }).then(() => {
+                router.push("/")
+              }) // 
             } else {
-              alert("Credenciales incorrectas")
+                        Swal.fire({
+            icon: "error",
+            title: "Acceso denegado",
+            text: "Las credenciales no son válidas para este plano.",
+            confirmButtonColor: "#7c3aed",       // Violeta medio (Tailwind: purple-600)
+            iconColor: "#ef4444",                // Rojo
+            background: "#0e0a1f",               // Mismo fondo que el éxito
+            color: "#e5e7eb",
+          })
+
             }
 
             setSubmitting(false)
