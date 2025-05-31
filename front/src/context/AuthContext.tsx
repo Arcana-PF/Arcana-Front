@@ -1,6 +1,7 @@
 "use client"
 import { IUserSession } from "@/types"
 import { createContext, useContext, useState, ReactNode, useEffect } from "react"
+import Cookies from "js-cookie"
 
 export interface AuthContextProps {
   userData: IUserSession | null
@@ -22,6 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (userData) {
       localStorage.setItem("userSession", JSON.stringify({token: userData.token, user: userData.user}))
+      Cookies.set("userSession", JSON.stringify({token: userData.token, user: userData.user}))
     }
   }, [userData])
 
