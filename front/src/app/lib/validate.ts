@@ -1,4 +1,16 @@
-import {IRegisterErrors, IRegisterProps } from "@/types";
+import { IloginErrors, IloginProps, IRegisterErrors, IRegisterProps } from "@/types";
+
+export function validateLoginForm (values: IloginProps) {
+         const errors: IloginErrors = {};
+         if (!values.email) {
+           errors.email = 'Required';
+         } else if (
+           !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
+         ) {
+           errors.email = 'Invalid email address';
+         }
+         return errors;
+       }
 
 export function validateRegisterForm (values: IRegisterProps) {
                 const errors: IRegisterErrors = {};

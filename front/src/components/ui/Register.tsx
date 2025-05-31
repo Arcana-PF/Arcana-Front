@@ -3,6 +3,7 @@ import { useState } from "react"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import { Eye, EyeOff, User, Mail, Lock, MapPin, Phone, Sparkles } from "lucide-react"
 import { validateRegisterForm } from "@/app/lib/validate"
+import { register } from "@/utils/auth.helper"
 
 const RegisterComponent = () => {
   const [showPassword, setShowPassword] = useState(false)
@@ -32,12 +33,10 @@ const RegisterComponent = () => {
           initialValues={{ email: "", password: "", name: "", address: "", phone: "" }}
           validate={validateRegisterForm}
           onSubmit={async (values) => {
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-            localStorage.setItem("user", JSON.stringify(values))
-            alert("¡Registro exitoso! Bienvenido al círculo arcano.")
+            await register(values);
           }}
         >
-          {({ isSubmitting, errors, touched }) => (
+          {({ isSubmitting, errors }) => (
             <Form className="space-y-6">
               {/* Nombre completo */}
               <div className="group">
