@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext"
 import { login } from "@/utils/auth.helper"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Mail, Lock, Sparkles, UserPlus, HelpCircle } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, Sparkles, UserPlus } from "lucide-react"
 import Link from "next/link"
 import Swal from "sweetalert2"
 
@@ -64,10 +64,19 @@ const LoginComponent = () => {
                 // Actualizar contexto de autenticación
                 setUserData({ token, user })
 
+                // 🔍 VERIFICAR QUE SE GUARDÓ CORRECTAMENTE
+                console.log("=== VERIFICACIÓN DE GUARDADO ===")
+                console.log("Token guardado:", document.cookie)
+                console.log("Usuario en localStorage:", localStorage.getItem("user"))
+                console.log("Token en localStorage:", localStorage.getItem("token"))
+                console.log("Contexto actualizado - user:", user)
+                console.log("Contexto actualizado - token:", token)
+                console.log("================================")
+
                 // Mostrar éxito con animación
                 await Swal.fire({
                   icon: "success",
-                  title: `¡Bienvenido de vuelta, ${user.name || "iniciado"}!`,
+                  title: `¡Bienvenido de vuelta, ${user?.name || "iniciado"}!`,
                   text: "Has accedido exitosamente al Círculo Arcano.",
                   confirmButtonText: "Continuar",
                   confirmButtonColor: "#facc15",
@@ -87,8 +96,8 @@ const LoginComponent = () => {
                   },
                 })
 
-                // Redirigir al dashboard
-                router.push("/dashboard")
+                // Redirigir al perfil del usuario
+                router.push("/profile")
               } catch (error: any) {
                 // Cerrar loading si está abierto
                 Swal.close()
@@ -211,7 +220,7 @@ const LoginComponent = () => {
                     )}
                   </button>
                 </div>
-                
+
                 {/* Texto adicional */}
                 <p className="text-center text-gray-400 text-sm mt-6">
                   Al ingresar, accederás a los secretos del círculo arcano
