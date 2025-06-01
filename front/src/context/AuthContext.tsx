@@ -1,46 +1,42 @@
-"use client"
+'use client'
+import { IUserSession } from '@/types';
+import React, { useState, useEffect, useContext, createContext } from 'react';
+import Cookies from 'js-cookie';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react"
-
-type User = {
-  id: number
-  name: string
-  email: string
+export interface AuthContextProps {
+  userData: IUserSession | null,
+  setUserData: (userData: IUserSession | null) => void,
 }
 
-type AuthContextType = {
-  user: User | null
-  login: (userData: User) => void
-  logout: () => void
+export const AuthContext = createContext<AuthContextProps>({
+  userData: null,
+  setUserData: () => {}
+})
+
+export interface AuthProviderProps {
+  children: React.ReactNode
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null)
+export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
+  const [userData, setUserData] = useState<IUserSession | null>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+    if (userData) {
+      localStorage.setItem("userSession", JSON.stringify({token: userData.token, user: userData.user}))
+      Cookies.set("userSession", JSON.stringify({token: userData.token, user: userData.user}))
     }
+  }, [userData])
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("userSession")!)
+    setUserData(userData)
   }, [])
 
-  const login = (userData: User) => {
-    setUser(userData)
-    localStorage.setItem("user", JSON.stringify(userData))
-  }
-
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem("user")
-  }
-
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ userData, setUserData }}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export const useAuth = () => {

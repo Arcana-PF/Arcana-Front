@@ -1,156 +1,212 @@
 "use client"
 import { useState } from "react"
-import { Formik, Form, Field, ErrorMessage } from "formik"
-import { Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react"
+import { validateLoginForm } from "@/app/lib/validate"
 import { useAuth } from "@/context/AuthContext"
-import { useRouter } from "next/navigation" 
+import { login } from "@/utils/auth.helper"
+import { ErrorMessage, Field, Form, Formik } from "formik"
+import { useRouter } from "next/navigation"
+import { Eye, EyeOff, Mail, Lock, Sparkles, UserPlus } from "lucide-react"
+import React from "react"
+import Link from "next/link"
 import Swal from "sweetalert2"
 
-
 const LoginComponent = () => {
+  const router = useRouter()
+  const { setUserData } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
-  const { login } = useAuth()
-  const router = useRouter() 
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-black flex items-center justify-center p-4">
-      {/* Efectos de fondo */}
+    <div className="fixed inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-black overflow-auto">
+      {/* Efectos de fondo decorativos */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-3/4 left-3/4 w-32 h-32 bg-yellow-400/5 rounded-full blur-2xl animate-pulse delay-500"></div>
       </div>
 
-      <div className="relative bg-black/80 backdrop-blur-sm rounded-2xl shadow-2xl p-8 w-full max-w-md border border-yellow-500/30 hover:border-yellow-500/50 transition-all duration-300">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <Sparkles className="w-8 h-8 text-yellow-500 mr-2" />
-            <h1 className="text-4xl font-extrabold text-yellow-600">Arcana</h1>
-            <Sparkles className="w-8 h-8 text-yellow-500 ml-2" />
+      {/* Contenedor del formulario */}
+      <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
+        <div className="bg-black/80 backdrop-blur-sm rounded-2xl shadow-2xl p-8 w-full max-w-md border border-yellow-500/30 hover:border-yellow-500/50 transition-all duration-300">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center mb-4">
+              <Sparkles className="w-8 h-8 text-yellow-500 mr-2 animate-pulse" />
+              <h1 className="text-4xl font-extrabold text-yellow-600">Acceso Arcano</h1>
+              <Sparkles className="w-8 h-8 text-yellow-500 ml-2 animate-pulse" />
+            </div>
+            <p className="text-gray-300 text-sm">Ingresar al Círculo Arcano</p>
           </div>
-          <p className="text-gray-300 text-sm">Accede a tu círculo místico</p>
-        </div>
 
-        <Formik
-          initialValues={{ email: "", password: "" }}
-          validate={(values) => {
-            const errors: { email?: string; password?: string } = {}
-            if (!values.email) errors.email = "El email es requerido"
-            if (!values.password) errors.password = "La contraseña es requerida"
-            return errors
-          }}
-          onSubmit={async (values, { setSubmitting }) => {
-            await new Promise((res) => setTimeout(res, 1000))
+          <Formik
+            initialValues={{ email: "", password: "" }}
+            validate={validateLoginForm}
+onSubmit={async (values, { setSubmitting }) => {
+  try {
+    // Mostrar loading con SweetAlert2
+    Swal.fire({
+      title: "Invocando acceso...",
+      text: "Conectando con el plano arcano",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      background: "#0e0a1f",
+      color: "#e5e7eb",
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
 
-            const storedUser = JSON.parse(localStorage.getItem("user") || "{}")
+    // Llamada al backend
+    const response = await login(values);
+    console.log("Respuesta completa del servidor:", response);
 
-            if (
-              storedUser.email === values.email &&
-              storedUser.password === values.password
-            ) {
-              login({
-                id: 1,
-                name: storedUser.name,
-                email: storedUser.email,
-              })
-                                        Swal.fire({
-                icon: "success",
-                title: `¡Bienvenido, ${storedUser.name || "viajero"}!`,
-                text: "Has accedido al Círculo Arcano.",
-                confirmButtonColor: "#facc15",       // Amarillo brillante
-                iconColor: "#facc15",
-                background: "#0e0a1f",               // Fondo púrpura oscuro
-                color: "#e5e7eb",                    // Texto gris claro
-              }).then(() => {
-                router.push("/")
-              }) // 
-            } else {
-                        Swal.fire({
-            icon: "error",
-            title: "Acceso denegado",
-            text: "Las credenciales no son válidas para este plano.",
-            confirmButtonColor: "#7c3aed",       // Violeta medio (Tailwind: purple-600)
-            iconColor: "#ef4444",                // Rojo
-            background: "#0e0a1f",               // Mismo fondo que el éxito
-            color: "#e5e7eb",
-          })
+    // Extraer token y usuario de la respuesta
+    const { validationToken, user } = response;
 
-            }
+    // Verificar si user está definido
+    if (!user) {
+      throw new Error("No se encontró información del usuario en la respuesta.");
+    }
 
-            setSubmitting(false)
-          }}
-        >
-          {({ isSubmitting }) => (
-            <Form className="space-y-6">
-              {/* Email */}
-              <div className="group">
-                <label className="flex items-center text-white font-medium mb-2">
-                  <Mail className="w-4 h-4 mr-2 text-yellow-500" />
-                  Email
-                </label>
-                <div className="relative">
-                  <Field
-                    type="email"
-                    name="email"
-                    placeholder="tuemail@ejemplo.com"
-                    className="w-full p-4 pl-12 border border-yellow-500/30 rounded-xl bg-gray-900/50 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 transition-all duration-200 backdrop-blur-sm"
-                  />
-                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+    // Guardar datos en el contexto de autenticación
+    setUserData({ token: validationToken, user });
+    
+    // Cerrar la alerta de carga
+    Swal.close();
+
+    // Mostrar mensaje de éxito
+    await Swal.fire({
+      icon: "success",
+      title: `¡Bienvenido de vuelta, ${user.name}!`,
+      text: "Has accedido exitosamente al Círculo Arcano.",
+      confirmButtonText: "Continuar",
+      confirmButtonColor: "#facc15",
+      background: "#0e0a1f",
+      color: "#e5e7eb",
+      timer: 3000,
+      timerProgressBar: true,
+    });
+
+    // Redirigir al usuario
+    router.push("/");
+  } catch (error: any) {
+    Swal.close();
+    console.error("Error al iniciar sesión:", error);
+
+    await Swal.fire({
+      icon: "error",
+      title: "Error al iniciar sesión",
+      text: error.message || "Ocurrió un problema desconocido.",
+      confirmButtonText: "Intentar de nuevo",
+      confirmButtonColor: "#7c3aed",
+      background: "#0e0a1f",
+      color: "#e5e7eb",
+    });
+  } finally {
+    setSubmitting(false);
+  }
+}}
+          >
+            {({ isSubmitting, errors, touched }) => (
+              <Form className="space-y-6">
+                {/* Email */}
+                <div className="group">
+                  <label className="flex items-center text-white font-medium mb-2">
+                    <Mail className="w-4 h-4 mr-2 text-yellow-500" />
+                    Email Arcano
+                  </label>
+                  <div className="relative">
+                    <Field
+                      type="email"
+                      name="email"
+                      placeholder="tuemail@circulo.arcano"
+                      className={`w-full p-4 pl-12 border rounded-xl bg-gray-900/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 backdrop-blur-sm ${
+                        errors.email && touched.email
+                          ? "border-red-500 focus:border-red-400 focus:ring-red-400/20"
+                          : "border-yellow-500/30 focus:border-yellow-400 focus:ring-yellow-400/20"
+                      }`}
+                    />
+                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  </div>
+                  <ErrorMessage name="email" component="div" className="text-red-400 mt-2 text-sm" />
                 </div>
-                <ErrorMessage name="email" component="div" className="text-red-400 mt-2 text-sm" />
-              </div>
 
-              {/* Contraseña */}
-              <div className="group">
-                <label className="flex items-center text-white font-medium mb-2">
-                  <Lock className="w-4 h-4 mr-2 text-yellow-500" />
-                  Contraseña
-                </label>
-                <div className="relative">
-                  <Field
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    placeholder="Tu contraseña"
-                    className="w-full p-4 pl-12 pr-12 border border-yellow-500/30 rounded-xl bg-gray-900/50 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 transition-all duration-200 backdrop-blur-sm"
-                  />
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                {/* Password */}
+                <div className="group">
+                  <label className="flex items-center text-white font-medium mb-2">
+                    <Lock className="w-4 h-4 mr-2 text-yellow-500" />
+                    Contraseña Secreta
+                  </label>
+                  <div className="relative">
+                    <Field
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      placeholder="Tu palabra de poder"
+                      className={`w-full p-4 pl-12 pr-12 border rounded-xl bg-gray-900/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 backdrop-blur-sm ${
+                        errors.password && touched.password
+                          ? "border-red-500 focus:border-red-400 focus:ring-red-400/20"
+                          : "border-yellow-500/30 focus:border-yellow-400 focus:ring-yellow-400/20"
+                      }`}
+                    />
+                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-yellow-400 transition-colors"
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <ErrorMessage name="password" component="div" className="text-red-400 mt-2 text-sm" />
+                </div>
+
+                {/* Botón de envío */}
+                <div className="pt-4">
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-yellow-400 transition-colors"
+                    type="submit"
+                    disabled={isSubmitting || Object.keys(errors).length > 0}
+                    className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 transform ${
+                      isSubmitting || Object.keys(errors).length > 0
+                        ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-yellow-500 to-yellow-600 text-black hover:from-yellow-400 hover:to-yellow-500 hover:scale-[1.02] hover:shadow-lg hover:shadow-yellow-500/25 active:scale-[0.98]"
+                    }`}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {isSubmitting ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Invocando acceso...
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Ingresar al Círculo
+                        <Sparkles className="w-5 h-5 ml-2" />
+                      </div>
+                    )}
                   </button>
                 </div>
-                <ErrorMessage name="password" component="div" className="text-red-400 mt-2 text-sm" />
-              </div>
 
-              {/* Botón de login */}
-              <div className="pt-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 transform ${
-                    isSubmitting
-                      ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-yellow-500 to-yellow-600 text-black hover:from-yellow-400 hover:to-yellow-500 hover:scale-[1.02] hover:shadow-lg hover:shadow-yellow-500/25 active:scale-[0.98]"
-                  }`}
-                >
-                  {isSubmitting ? (
-                    <div className="flex items-center justify-center">
-                      <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Ingresando...
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 mr-2" />
-                      Ingresar al Círculo Arcano
-                      <Sparkles className="w-5 h-5 ml-2" />
-                    </div>
-                  )}
-                </button>
-              </div>
-            </Form>
-          )}
-        </Formik>
+                {/* Texto adicional */}
+                <p className="text-center text-gray-400 text-sm mt-6">
+                  Al ingresar, accederás a los secretos del círculo arcano
+                </p>
+
+                {/* Enlaces de navegación */}
+                <div className="text-center mt-6 pt-4 border-t border-yellow-500/20">
+                  <p className="text-gray-400 text-sm mb-3">¿No tienes una cuenta?</p>
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center text-yellow-500 hover:text-yellow-400 transition-colors font-medium text-sm bg-yellow-500/10 hover:bg-yellow-500/20 px-4 py-2 rounded-lg border border-yellow-500/30 hover:border-yellow-500/50"
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Únete al Círculo Arcano
+                  </Link>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </div>
       </div>
     </div>
   )
