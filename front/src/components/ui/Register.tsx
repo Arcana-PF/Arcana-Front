@@ -1,5 +1,7 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/context/AuthContext"
+import { useRouter } from "next/navigation"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import { Eye, EyeOff, User, Mail, Lock, MapPin, Phone, Sparkles } from "lucide-react"
 import { validateRegisterForm } from "@/app/lib/validate"
@@ -7,6 +9,15 @@ import { register } from "@/utils/auth.helper"
 
 const RegisterComponent = () => {
   const [showPassword, setShowPassword] = useState(false)
+
+  const { userData } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (userData) {
+      router.push("/"); // Redirige al home si ya está logueado
+    }
+  }, [userData, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-black flex items-center justify-center p-4">
