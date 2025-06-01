@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { validateLoginForm } from "@/app/lib/validate"
 import { useAuth } from "@/context/AuthContext"
 import { login } from "@/utils/auth.helper"
@@ -10,13 +10,25 @@ import React from "react"
 import Link from "next/link"
 import Swal from "sweetalert2"
 
+
+
+
 const LoginComponent = () => {
   const router = useRouter()
   const { setUserData } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+  const { userData } = useAuth();
+  
+
+    useEffect(() => {
+    if (userData) {
+      router.push("/"); // Redirige al home si ya está logueado
+    }
+  }, [userData, router]);
+
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-black overflow-auto">
+    <div className="mt-25 fixed inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-black overflow-auto">
       {/* Efectos de fondo decorativos */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl animate-pulse"></div>
@@ -89,19 +101,22 @@ onSubmit={async (values, { setSubmitting }) => {
 
     // Redirigir al usuario
     router.push("/");
-  } catch (error: any) {
-    Swal.close();
-    console.error("Error al iniciar sesión:", error);
+  } catch (error: unknown) {
+  Swal.close();
+  console.error("Error al iniciar sesión:", error);
 
-    await Swal.fire({
-      icon: "error",
-      title: "Error al iniciar sesión",
-      text: error.message || "Ocurrió un problema desconocido.",
-      confirmButtonText: "Intentar de nuevo",
-      confirmButtonColor: "#7c3aed",
-      background: "#0e0a1f",
-      color: "#e5e7eb",
-    });
+  // Asegúrate de que sea un error de tipo Error
+  const message = error instanceof Error ? error.message : "Ocurrió un problema desconocido.";
+
+  await Swal.fire({
+    icon: "error",
+    title: "Error al iniciar sesión",
+    text: message,
+    confirmButtonText: "Intentar de nuevo",
+    confirmButtonColor: "#7c3aed",
+    background: "#0e0a1f",
+    color: "#e5e7eb",
+  });
   } finally {
     setSubmitting(false);
   }
