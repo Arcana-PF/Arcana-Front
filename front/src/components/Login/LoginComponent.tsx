@@ -6,6 +6,7 @@ import { login } from "@/utils/auth.helper"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock, Sparkles, UserPlus } from "lucide-react"
+import React from "react"
 import Link from "next/link"
 import Swal from "sweetalert2"
 
@@ -39,94 +40,72 @@ const LoginComponent = () => {
           <Formik
             initialValues={{ email: "", password: "" }}
             validate={validateLoginForm}
-            onSubmit={async (values, { setSubmitting }) => {
-              try {
-                // Mostrar loading con SweetAlert2
-                Swal.fire({
-                  title: "Invocando acceso...",
-                  text: "Conectando con el plano arcano",
-                  allowOutsideClick: false,
-                  allowEscapeKey: false,
-                  showConfirmButton: false,
-                  background: "#0e0a1f",
-                  color: "#e5e7eb",
-                  didOpen: () => {
-                    Swal.showLoading()
-                  },
-                })
+onSubmit={async (values, { setSubmitting }) => {
+  try {
+    // Mostrar loading con SweetAlert2
+    Swal.fire({
+      title: "Invocando acceso...",
+      text: "Conectando con el plano arcano",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      background: "#0e0a1f",
+      color: "#e5e7eb",
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
 
-                const response = await login(values);
-                const { token, user } = response;
-                setUserData({ token, user }); // Actualizas el contexto de autenticación
-                Swal.close(); // Cierras el loading después de actualizar el estado
+    // Llamada al backend
+    const response = await login(values);
+    console.log("Respuesta completa del servidor:", response);
 
-                // Verificar almacenamiento
-                console.log("=== VERIFICACIÓN DE GUARDADO ===")
-                console.log("Token guardado:", document.cookie)
-                console.log("Datos en localStorage:", localStorage.getItem("userSession"));
-                console.log("================================")
+    // Extraer token y usuario de la respuesta
+    const { validationToken, user } = response;
 
-                // Mostrar éxito con animación
-                await Swal.fire({
-                  icon: "success",
-                  title: `¡Bienvenido de vuelta, ${user?.name || "iniciado"}!`,
-                  text: "Has accedido exitosamente al Círculo Arcano.",
-                  confirmButtonText: "Continuar",
-                  confirmButtonColor: "#facc15",
-                  iconColor: "#facc15",
-                  background: "#0e0a1f",
-                  color: "#e5e7eb",
-                  timer: 3000,
-                  timerProgressBar: true,
-                  showClass: {
-                    popup: "animate__animated animate__fadeInDown",
-                  },
-                  hideClass: {
-                    popup: "animate__animated animate__fadeOutUp",
-                  },
-                  customClass: {
-                    popup: "border border-yellow-500/30",
-                  },
-                })
+    // Verificar si user está definido
+    if (!user) {
+      throw new Error("No se encontró información del usuario en la respuesta.");
+    }
 
-                // Redirigir al home 
-                router.push("/")
-              } catch (error: any) {
-                // Cerrar loading si está abierto
-                Swal.close()
+    // Guardar datos en el contexto de autenticación
+    setUserData({ token: validationToken, user });
+    
+    // Cerrar la alerta de carga
+    Swal.close();
 
-                console.error("Error al iniciar sesión:", error)
+    // Mostrar mensaje de éxito
+    await Swal.fire({
+      icon: "success",
+      title: `¡Bienvenido de vuelta, ${user.name}!`,
+      text: "Has accedido exitosamente al Círculo Arcano.",
+      confirmButtonText: "Continuar",
+      confirmButtonColor: "#facc15",
+      background: "#0e0a1f",
+      color: "#e5e7eb",
+      timer: 3000,
+      timerProgressBar: true,
+    });
 
-                // Mostrar error específico según el tipo
-                let errorTitle = "Acceso Denegado"
-                let errorText = "Las credenciales no son válidas para este círculo."
+    // Redirigir al usuario
+    router.push("/");
+  } catch (error: any) {
+    Swal.close();
+    console.error("Error al iniciar sesión:", error);
 
-                if (error.message?.includes("Network")) {
-                  errorTitle = "Error de Conexión"
-                  errorText = "No se pudo conectar con el servidor arcano. Verifica tu conexión."
-                } else if (error.message?.includes("Server error")) {
-                  errorTitle = "Error del Servidor"
-                  errorText = "El servidor arcano está experimentando dificultades. Inténtalo más tarde."
-                }
-
-                await Swal.fire({
-                  icon: "error",
-                  title: errorTitle,
-                  text: errorText,
-                  confirmButtonText: "Intentar de nuevo",
-                  confirmButtonColor: "#7c3aed",
-                  iconColor: "#ef4444",
-                  background: "#0e0a1f",
-                  color: "#e5e7eb",
-                  footer: '<a href="#" style="color: #facc15;">¿Olvidaste tu contraseña?</a>',
-                  customClass: {
-                    popup: "border border-red-500/30",
-                  },
-                })
-              } finally {
-                setSubmitting(false)
-              }
-            }}
+    await Swal.fire({
+      icon: "error",
+      title: "Error al iniciar sesión",
+      text: error.message || "Ocurrió un problema desconocido.",
+      confirmButtonText: "Intentar de nuevo",
+      confirmButtonColor: "#7c3aed",
+      background: "#0e0a1f",
+      color: "#e5e7eb",
+    });
+  } finally {
+    setSubmitting(false);
+  }
+}}
           >
             {({ isSubmitting, errors, touched }) => (
               <Form className="space-y-6">
