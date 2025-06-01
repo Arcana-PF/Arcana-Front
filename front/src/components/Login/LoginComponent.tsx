@@ -89,8 +89,8 @@ const LoginComponent = () => {
                   },
                 })
 
-                // Redirigir al perfil del usuario
-                router.push("/profile")
+                // Redirigir al home 
+                router.push("/")
               } catch (error: any) {
                 // Cerrar loading si está abierto
                 Swal.close()
