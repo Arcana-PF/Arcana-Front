@@ -20,30 +20,35 @@ export async function register(userData: IRegisterProps) {
       throw new Error(errorData.message || 'Unknown error');
     }
   } catch (error: any) {
-    console.error("Error:", error);
+    console.error("Error al registrarse:", error);
     throw new Error(error.message || 'Unknown error');
   }
 }
 
+
 export async function login(userData: IloginProps) {
   try {
+    // Verificando el contenido del body antes de enviarlo
+    console.log("Contenido de body:", JSON.stringify(userData));
+
     const response = await fetch(`${APIURL}/auth/signin`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData),
+      headers: { 
+        "Content-Type": "application/json" 
+      },
+      body: JSON.stringify(userData)
     });
 
-    const data = await response.json();
-
     if (response.ok) {
-      localStorage.setItem("token", data.validationToken);
-      console.log("Token guardado en localStorage:", localStorage.getItem("token"));
-      return data;
+      console.log("Respuesta JSON:", await response.clone().json());
+      // Retorna la respuesta del servidor, la cual el componente puede usar para mostrar un mensaje de éxito
+      return await response.json();
     } else {
-      throw new Error(data.message || "Error desconocido");
+      const errorData = await response.json(); // Detalles del error
+      throw new Error(errorData.message || "Unknown error");
     }
   } catch (error: any) {
     console.error("Error al iniciar sesión:", error);
-    throw error;
+    throw new Error(error.message || "Unknown error");
   }
 }
