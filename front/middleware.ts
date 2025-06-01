@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
   const isProtectedRoute = protectedRoutes.some(route =>
     pathname.startsWith(route)
   )
-
+console.log('Middleware cookie:', userSessionCookie)
   const authRoutes = ['/login', '/register']
   const isAuthRoute = authRoutes.includes(pathname)
 
@@ -30,3 +30,4 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/profile/:path*', '/cart', '/login', '/register'],
 }
+
