@@ -39,7 +39,7 @@ const LoginComponent = () => {
           <Formik
             initialValues={{ email: "", password: "" }}
             validate={validateLoginForm}
-            onSubmit={async (values, { setSubmitting, setFieldError }) => {
+            onSubmit={async (values, { setSubmitting }) => {
               try {
                 // Mostrar loading con SweetAlert2
                 Swal.fire({
@@ -55,22 +55,15 @@ const LoginComponent = () => {
                   },
                 })
 
-                const response = await login(values)
-                const { token, user } = response
+                const response = await login(values);
+                const { token, user } = response;
+                setUserData({ token, user }); // Actualizas el contexto de autenticación
+                Swal.close(); // Cierras el loading después de actualizar el estado
 
-                // Cerrar loading
-                Swal.close()
-
-                // Actualizar contexto de autenticación
-                setUserData({ token, user })
-
-                // 🔍 VERIFICAR QUE SE GUARDÓ CORRECTAMENTE
+                // Verificar almacenamiento
                 console.log("=== VERIFICACIÓN DE GUARDADO ===")
                 console.log("Token guardado:", document.cookie)
-                console.log("Usuario en localStorage:", localStorage.getItem("user"))
-                console.log("Token en localStorage:", localStorage.getItem("token"))
-                console.log("Contexto actualizado - user:", user)
-                console.log("Contexto actualizado - token:", token)
+                console.log("Datos en localStorage:", localStorage.getItem("userSession"));
                 console.log("================================")
 
                 // Mostrar éxito con animación
@@ -130,12 +123,6 @@ const LoginComponent = () => {
                     popup: "border border-red-500/30",
                   },
                 })
-
-                // Marcar errores en los campos si son credenciales incorrectas
-                if (error.message?.includes("Failed to login")) {
-                  setFieldError("email", "Credenciales incorrectas")
-                  setFieldError("password", "Credenciales incorrectas")
-                }
               } finally {
                 setSubmitting(false)
               }

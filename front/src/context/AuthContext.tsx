@@ -1,10 +1,10 @@
-"use client"
-import { IUserSession } from "@/types"
-import { createContext, useContext, useState, ReactNode, useEffect } from "react"
-import Cookies from "js-cookie"
+'use client'
+import { IUserSession } from '@/types';
+import React, { useState, useEffect, useContext, createContext } from 'react';
+import Cookies from 'js-cookie';
 
 export interface AuthContextProps {
-  userData: IUserSession | null
+  userData: IUserSession | null,
   setUserData: (userData: IUserSession | null) => void,
 }
 
@@ -14,11 +14,11 @@ export const AuthContext = createContext<AuthContextProps>({
 })
 
 export interface AuthProviderProps {
-  children: ReactNode
+  children: React.ReactNode
 }
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [userData, setUserData] = useState<IUserSession | null>(null)
+export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
+  const [userData, setUserData] = useState<IUserSession | null>(null);
 
   useEffect(() => {
     if (userData) {
@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={{ userData, setUserData }}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export const useAuth = () => {
