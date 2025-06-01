@@ -10,44 +10,40 @@ export async function register(userData: IRegisterProps) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(userData)
-    })
+    });
 
     if (response.ok) {
-      alert("usuario registrado correctamente");
-      // Aquí puedes manejar la respuesta del servidor, como redirigir al usuario o mostrar un mensaje de éxito
+      // Retorna la respuesta del servidor, la cual el componente puede usar para mostrar un mensaje de éxito
       return await response.json();
     } else {
       const errorData = await response.json(); // Detalles del error
-      alert(`Failed to register user: ${errorData.message || 'Unknown error'}`);
-      throw new Error("Error en el servidor");
+      throw new Error(errorData.message || 'Unknown error');
     }
   } catch (error: any) {
     console.error("Error:", error);
-    alert(`An error occurred: ${error.message || 'Unknown error'}`);
-    throw new Error(error);
+    throw new Error(error.message || 'Unknown error');
   }
 }
 
 export async function login(userData: IloginProps) {
-    try {
-      const response = await fetch(`${APIURL}/auth/signin`, {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(userData)
-      })
-  
-      if (response.ok) {
-        alert("Usuario logueado correctamente");
-        // Aquí puedes manejar la respuesta del servidor, como redirigir al usuario o guardar el token
-        return await response.json();
-      } else {
-        const errorData = await response.json(); // Detalles del error
-        alert(`Failed to login user: ${errorData.message || 'Unknown error'}`);
-        throw new Error("Error en el servidor");
-      }
-    } catch (error: any) {
-      throw new Error(error);
+  try {
+    const response = await fetch(`${APIURL}/auth/signin`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      localStorage.setItem("token", data.validationToken);
+      console.log("Token guardado en localStorage:", localStorage.getItem("token"));
+      return data;
+    } else {
+      throw new Error(data.message || "Error desconocido");
     }
+  } catch (error: any) {
+    console.error("Error al iniciar sesión:", error);
+    throw error;
   }
+}
