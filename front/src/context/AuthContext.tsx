@@ -1,46 +1,62 @@
-'use client'
+'use client';
+
 import { IUserSession } from '@/types';
 import React, { useState, useEffect, useContext, createContext } from 'react';
 import Cookies from 'js-cookie';
 
 export interface AuthContextProps {
-  userData: IUserSession | null,
-  setUserData: (userData: IUserSession | null) => void,
+  userData: IUserSession | null;
+  setUserData: (userData: IUserSession | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextProps>({
   userData: null,
-  setUserData: () => {}
-})
+  setUserData: () => {},
+});
 
 export interface AuthProviderProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [userData, setUserData] = useState<IUserSession | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  // Cargar datos desde localStorage al iniciar
   useEffect(() => {
-    if (userData) {
-      localStorage.setItem("userSession", JSON.stringify({token: userData.token, user: userData.user}))
-      Cookies.set("userSession", JSON.stringify({token: userData.token, user: userData.user}))
+    const session = localStorage.getItem('userSession');
+    if (session) {
+      setUserData(JSON.parse(session));
     }
-  }, [userData])
+    setLoading(false);
+  }, []);
 
+  // Guardar o limpiar datos según userData
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("userSession")!)
-    setUserData(userData)
-  }, [])
+  if (userData) {
+    localStorage.setItem('userSession', JSON.stringify(userData));
+
+    // Usamos user.id o user.email como valor de cookie
+    Cookies.set('userSession', userData.user.email, {
+      path: '/',
+      sameSite: 'lax',
+    });
+  } else {
+    localStorage.removeItem('userSession');
+    Cookies.remove('userSession');
+  }
+}, [userData]);
+
 
   return (
     <AuthContext.Provider value={{ userData, setUserData }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
-}
+};
 
 export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error("useAuth debe usarse dentro de un AuthProvider")
-  return context
-}
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth debe usarse dentro de un AuthProvider');
+  return context;
+};

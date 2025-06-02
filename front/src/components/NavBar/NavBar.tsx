@@ -9,6 +9,7 @@ import type { IProduct } from "@/types"
 import { Search, ShoppingCart, UserIcon, Menu, LogOut, UserPlus, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Swal from "sweetalert2"
+import Cookies from 'js-cookie'
 
 export default function Navbar() {
   const { userData, setUserData } = useAuth()
@@ -57,39 +58,73 @@ export default function Navbar() {
     product.name.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const handleLogout = () => {
-    Swal.fire({
-      title: "¿Abandonar el Círculo?",
-      text: "¿Estás seguro de que deseas cerrar tu conexión mística?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Sí, abandonar",
-      cancelButtonText: "No, permanecer",
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#7c3aed",
-      background: "#0e0a1f",
-      color: "#e5e7eb",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setUserData(null)
-        localStorage.removeItem("userSession")
+  const handleLogout = async () => {
+  const { isConfirmed } = await Swal.fire({
+    title: "¿Abandonar el Círculo?",
+    text: "¿Estás seguro de que deseas cerrar tu conexión mística?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Sí, abandonar",
+    cancelButtonText: "No, permanecer",
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#7c3aed",
+    background: "#0e0a1f",
+    color: "#e5e7eb",
+    allowOutsideClick: false,
+    backdrop: `
+      rgba(14, 10, 31, 0.8)
+      url("/images/magic-sparkles.gif")
+      center top
+      no-repeat
+    `
+  });
 
-        Swal.fire({
-          title: "Conexión cerrada",
-          text: "Has abandonado el Círculo Arcano. Regresa pronto.",
-          icon: "info",
-          confirmButtonColor: "#facc15",
-          background: "#0e0a1f",
-          color: "#e5e7eb",
-          timer: 2000,
-          timerProgressBar: true,
-          showConfirmButton: false,
-        }).then(() => {
-          router.push("/")
-        })
-      }
-    })
+  if (isConfirmed) {
+    try {
+      //  Limpiar el estado del frontend
+      setUserData(null);
+      
+      // Eliminar datos del localStorage
+      localStorage.removeItem("userSession");
+      
+
+      
+
+      
+      // Borrar todas las cookies accesibles
+      
+      Cookies.remove('userSession')
+      
+      await Swal.fire({
+        title: "Conexión cerrada",
+        text: "Has abandonado el Círculo Arcano. Los portales se cerrarán...",
+        icon: "success",
+        confirmButtonColor: "#facc15",
+        background: "#0e0a1f",
+        color: "#e5e7eb",
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        willClose: () => {
+          //Redireccionar después de cerrar
+          router.push("/");
+          router.refresh(); // Para asegurar que se actualicen los datos
+        }
+      });
+
+    } catch (error) {
+      console.error("Error en el ritual de cierre:", error);
+      await Swal.fire({
+        title: "¡Protecciones místicas activas!",
+        text: "El cierre de sesión no se completó completamente. Por favor, intenta nuevamente.",
+        icon: "error",
+        confirmButtonColor: "#7c3aed",
+        background: "#0e0a1f",
+        color: "#e5e7eb"
+      });
+    }
   }
+};
 
   const handleCartClick = () => {
     router.push("/cart")
@@ -142,7 +177,7 @@ export default function Navbar() {
               <>
                 <button
                   onClick={handleCartClick}
-                  className="p-2 hover:text-yellow-400 transition-colors relative"
+                  className="p-2 hover:text-yellow-400 transition-colors relative cursor-pointer"
                   aria-label="Carrito"
                 >
                   <ShoppingCart className="w-5 h-5" />
@@ -155,7 +190,7 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="p-2 hover:text-red-400 transition-colors"
+                  className="p-2 hover:text-red-400 transition-colors cursor-pointer"
                   aria-label="Cerrar sesión"
                 >
                   <LogOut className="w-5 h-5" />
