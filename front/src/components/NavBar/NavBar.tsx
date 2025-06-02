@@ -73,6 +73,7 @@ export default function Navbar() {
       if (result.isConfirmed) {
         setUserData(null)
         localStorage.removeItem("userSession")
+        document.cookie = "userSession=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
         Swal.fire({
           title: "Conexión cerrada",
