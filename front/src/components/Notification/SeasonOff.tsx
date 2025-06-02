@@ -78,7 +78,7 @@ export const SeasonalOffer = () => {
         {/* Close button */}
         <button
           onClick={handleClose}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-black/30 hover:bg-black/50 transition-all duration-200"
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-black/30 hover:bg-black/50 transition-all duration-200 cursor-pointer"
           aria-label="Cerrar oferta"
         >
           <X className="w-5 h-5 text-gray-300 hover:text-white" />
@@ -151,15 +151,15 @@ export const SeasonalOffer = () => {
           <div className="space-y-2 pt-2">
             <button
               onClick={handleAccept}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-[1.02]"
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer"
             >
               <Gift className="w-5 h-5" />
-              <span className="font-semibold">Aprovechar Oferta</span>
+              <span className="font-semibold cursor-pointer">Aprovechar Oferta</span>
             </button>
 
             <button
               onClick={handleClose}
-              className="w-full text-gray-400 hover:text-white text-sm py-1 transition-colors duration-200"
+              className="w-full text-gray-400 hover:text-white text-sm py-1 transition-colors duration-200 cursor-pointer"
             >
               Continuar explorando
             </button>
