@@ -5,6 +5,7 @@ import NavBar from "@/components/NavBar/NavBar";
 import Footer from "@/components/Footer/Footer";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
+import { SeasonalOffer } from "@/components/Notification/SeasonOff";
 
 
 
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <CartProvider>
         <AuthProvider>  
         <NavBar />
+        <SeasonalOffer />
         {children}
         <Footer />
         </AuthProvider>
