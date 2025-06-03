@@ -22,6 +22,8 @@ export default function Navbar() {
   const [allProducts, setAllProducts] = useState<IProduct[]>([])
   const [loadingProducts, setLoadingProducts] = useState(false)
 
+  
+  // Cargar los productos desde el helper al montar el componente
   useEffect(() => {
   async function fetchProducts() {
     try {
@@ -41,23 +43,12 @@ export default function Navbar() {
   fetchProducts();
 }, []);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowResults(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
-
+  // Filtrar productos según el término de búsqueda
   const filteredProducts = allProducts.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
+  // Manejar el cierre de sesión con confirmación
   const handleLogout = async () => {
   const { isConfirmed } = await Swal.fire({
     title: "¿Abandonar el Círculo?",
@@ -86,11 +77,6 @@ export default function Navbar() {
       
       // Eliminar datos del localStorage
       localStorage.removeItem("userSession");
-      
-
-      
-
-      
       // Borrar todas las cookies accesibles
       
       Cookies.remove('userSession')
@@ -369,10 +355,9 @@ export default function Navbar() {
                       }}
                     >
                       <div className="relative w-10 h-10 rounded-md overflow-hidden border border-yellow-500/30 mr-3">
-                        <Image
+                        <img
                           src={product.imgUrl || "/placeholder.svg"}
                           alt={product.name}
-                          fill
                           className="object-cover"
                         />
                       </div>
