@@ -1,40 +1,28 @@
 "use client"
-import { useState, useEffect } from "react"
-import { useAuth } from "@/context/AuthContext"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import { Eye, EyeOff, User, Mail, Lock, MapPin, Phone, Sparkles } from "lucide-react"
 import { validateRegisterForm } from "@/app/lib/validate"
 import { register } from "@/utils/auth.helper"
+import Swal from "sweetalert2"
 
 const RegisterComponent = () => {
   const [showPassword, setShowPassword] = useState(false)
-
-  const { userData } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (userData) {
-      router.push("/"); // Redirige al home si ya está logueado
-    }
-  }, [userData, router]);
+  const router = useRouter()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-black flex items-center justify-center p-4">
-      {/* Efectos de fondo decorativos */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
       <div className="relative bg-black/80 backdrop-blur-sm rounded-2xl shadow-2xl p-8 w-full max-w-2xl border border-yellow-500/30 hover:border-yellow-500/50 transition-all duration-300">
-      
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <Sparkles className="w-8 h-8 text-yellow-500 mr-2" />
-            <h1 className="text-4xl font-extrabold text-yellow-600">
-              Arcana {/* sustituir por logo */}
-            </h1>
+            <h1 className="text-4xl font-extrabold text-yellow-600">Arcana</h1>
             <Sparkles className="w-8 h-8 text-yellow-500 ml-2" />
           </div>
           <p className="text-gray-300 text-sm">Únete a nuestro círculo místico</p>
@@ -43,13 +31,29 @@ const RegisterComponent = () => {
         <Formik
           initialValues={{ email: "", password: "", name: "", address: "", phone: "" }}
           validate={validateRegisterForm}
-          onSubmit={async (values) => {
-            await register(values);
+          onSubmit={async (values, { resetForm }) => {
+            try {
+              await register(values)
+              resetForm()
+              await Swal.fire({
+                icon: "success",
+                title: "¡Registro exitoso!",
+                text: "Ya formas parte del círculo arcano.",
+                confirmButtonColor: "#facc15"
+              })
+              router.push("/")
+            } catch (error: any) {
+              Swal.fire({
+                icon: "error",
+                title: "Error al registrarte",
+                text: error?.response?.data?.message || "Ocurrió un problema. Intenta de nuevo.",
+                confirmButtonColor: "#ef4444"
+              })
+            }
           }}
         >
           {({ isSubmitting, errors }) => (
             <Form className="space-y-6">
-              {/* Nombre completo */}
               <div className="group">
                 <label className="flex items-center text-white font-medium mb-2">
                   <User className="w-4 h-4 mr-2 text-yellow-500" />
@@ -67,9 +71,7 @@ const RegisterComponent = () => {
                 <ErrorMessage name="name" component="div" className="text-red-400 mt-2 text-sm flex items-center" />
               </div>
 
-              {/* Grid para email y password */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Email */}
                 <div className="group">
                   <label className="flex items-center text-white font-medium mb-2">
                     <Mail className="w-4 h-4 mr-2 text-yellow-500" />
@@ -87,7 +89,6 @@ const RegisterComponent = () => {
                   <ErrorMessage name="email" component="div" className="text-red-400 mt-2 text-sm" />
                 </div>
 
-                {/* Password */}
                 <div className="group">
                   <label className="flex items-center text-white font-medium mb-2">
                     <Lock className="w-4 h-4 mr-2 text-yellow-500" />
@@ -113,9 +114,7 @@ const RegisterComponent = () => {
                 </div>
               </div>
 
-              {/* Grid para dirección y teléfono */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Dirección */}
                 <div className="group">
                   <label className="flex items-center text-white font-medium mb-2">
                     <MapPin className="w-4 h-4 mr-2 text-yellow-500" />
@@ -133,7 +132,6 @@ const RegisterComponent = () => {
                   <ErrorMessage name="address" component="div" className="text-red-400 mt-2 text-sm" />
                 </div>
 
-                {/* Teléfono */}
                 <div className="group">
                   <label className="flex items-center text-white font-medium mb-2">
                     <Phone className="w-4 h-4 mr-2 text-yellow-500" />
@@ -152,7 +150,6 @@ const RegisterComponent = () => {
                 </div>
               </div>
 
-              {/* Botón de envío mejorado */}
               <div className="pt-4">
                 <button
                   type="submit"
@@ -178,7 +175,6 @@ const RegisterComponent = () => {
                 </button>
               </div>
 
-              {/* Texto adicional */}
               <p className="text-center text-gray-400 text-sm mt-6">
                 Al registrarte, aceptas formar parte de nuestro círculo místico
               </p>
