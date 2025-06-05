@@ -19,9 +19,12 @@ export async function register(userData: IRegisterProps) {
       const errorData = await response.json(); // Detalles del error
       throw new Error(errorData.message || 'Unknown error');
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error al registrarse:", error);
-    throw new Error(error.message || 'Unknown error');
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error('Unknown error');
   }
 }
 
@@ -33,8 +36,8 @@ export async function login(userData: IloginProps) {
 
     const response = await fetch(`${APIURL}/auth/signin`, {
       method: "POST",
-      headers: { 
-        "Content-Type": "application/json" 
+      headers: {
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(userData)
     });
@@ -47,8 +50,11 @@ export async function login(userData: IloginProps) {
       const errorData = await response.json(); // Detalles del error
       throw new Error(errorData.message || "Unknown error");
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error al iniciar sesión:", error);
-    throw new Error(error.message || "Unknown error");
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Unknown error");
   }
 }
