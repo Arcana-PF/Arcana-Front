@@ -3,6 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { IProduct } from '@/types';
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
+import Image from 'next/image';
 
 const ProductDetail: React.FC<IProduct> = ({ id, name, imgUrl, description, stock, price, category }) => {
   const { userData } = useAuth();
@@ -80,7 +81,7 @@ const ProductDetail: React.FC<IProduct> = ({ id, name, imgUrl, description, stoc
   return (
     <div className="max-w-md mx-auto mt-10 bg-purple-800 border border-yellow-500 rounded-lg shadow-md overflow-hidden p-6 space-y-4">
       <h1 className="text-2xl font-bold text-white">{name}</h1>
-      <img src={imgUrl} alt={name} className="w-full h-64 object-cover rounded-md" />
+      <Image src={imgUrl} alt={name} className="w-full h-64 object-cover rounded-md" />
       <h3 className="text-lg text-gray-300">{description}</h3>
       <p className="text-gray-300">Price: <span className="font-semibold">${price}</span></p>
       <p className="text-gray-300">Stock: <span className="font-semibold">{stock}</span></p>
