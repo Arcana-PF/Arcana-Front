@@ -46,6 +46,7 @@ export interface IUserSession {
         name: string;
         phone: string;
         orders: IOrder[];
+        isAdmin: boolean;
     };
 }
 
