@@ -8,6 +8,7 @@ import { CartProvider } from "@/context/CartContext";
 import { SeasonalOffer } from "@/components/Notification/SeasonOff";
 import { Inter } from 'next/font/google';
 
+
 const inter = Inter({ subsets: ['latin'] });
 
 //const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
