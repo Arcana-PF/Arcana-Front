@@ -30,7 +30,7 @@ export const SeasonalOffer = () => {
   useEffect(() => {
     if (typeof window === "undefined") return
 
-    // Para testing, puedes comentar esta línea en producción
+    // Para test, que salga a cada rato
     localStorage.removeItem(`offer-${offerData.id}`)
 
     const today = new Date().toDateString()
