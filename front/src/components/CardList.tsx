@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import Card from "./Card";
 import mock_products from "@/utils/mock_products";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface CardListProps {
   sort?: string;
@@ -17,9 +17,11 @@ const CardList: React.FC<CardListProps> = ({
   sort = "Recomendados",
   page = 1,
   category = "Todos",
-  itemsPerPage = 9,
+  itemsPerPage = 8,
   onTotalPagesChange,
 }) => {
+  const router = useRouter();
+  
   let filtered = category === "Todos"
     ? mock_products
     : mock_products.filter((product) => product.category === category);
@@ -52,9 +54,11 @@ const CardList: React.FC<CardListProps> = ({
   return (
     <div className="flex flex-wrap items-center gap-4 p-4 justify-center">
       {paginated.map((product) => (
-        <Link key={product.id} href={`/product/${product.id}`}>
-          <Card {...product} />
-        </Link>
+        <Card 
+          key={product.id}
+          {...product}
+          onClick={() => router.push(`/product/${product.id}`)}
+        />
       ))}
     </div>
   );

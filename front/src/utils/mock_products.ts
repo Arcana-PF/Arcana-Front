@@ -20,7 +20,7 @@ const mock_products: IProduct [] = [{
       "description": "Ideal para rituales y purificacion del ambiente.",
       "price": 1807.90,
       "stock": 31,
-      "imgUrl": "https://alparamis.com.ar/456155-superlarge_default/vela-de-soja-aromatica-250-g-linea-clasica-pomelo-espacio-aroma.jpg",
+      "imgUrl": "https://m.media-amazon.com/images/I/61Nd6GKMqmL.jpg",
       "category": "Velas"
     },
     {

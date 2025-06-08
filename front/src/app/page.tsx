@@ -1,9 +1,15 @@
+'use client'; 
+
+import { useState } from 'react';
 import CardList from "@/components/CardList"
 import ComponentSlider from "@/components/Slider/SliderComponent"
 import { Sparkles, Moon, Star, Eye, Heart, Shield, ArrowRight, Mail, Award, Users } from "lucide-react"
 import Link from "next/link"
 
+
 export default function Home() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   return (
     <main className="min-h-screen w-full bg-gray-50 text-gray-900 overflow-x-hidden">
       {/* Slider principal */}
@@ -106,7 +112,26 @@ export default function Home() {
       </p>
     </div>
 
-    <CardList />
+        <CardList 
+        category="Velas" 
+        sort="Precio: Menor a Mayor"
+        page={currentPage}
+        onTotalPagesChange={setTotalPages}
+        itemsPerPage={4}
+      />
+
+      {/* Navegación de páginas */}
+      <div className="flex gap-2 justify-center my-8">
+        {Array.from({length: totalPages}, (_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i + 1)}
+            className={`px-4 py-2 rounded ${currentPage === i + 1 ? 'bg-purple-600 text-white' : 'bg-gray-200'}`}
+          >
+            {i + 1}
+          </button>
+        ))}
+      </div>
 
     <div className="text-center mt-12">
       <Link href="/products">
