@@ -101,7 +101,7 @@ const Products = () => {
           <button
             onClick={handlePrev}
             disabled={page === 1}
-            className="px-3 py-2 rounded-md bg-purple-100 text-purple-800 hover:bg-purple-200 flex items-center disabled:opacity-50"
+            className="px-3 py-2 rounded-md bg-purple-100 text-purple-800 hover:bg-purple-200 flex items-center disabled:opacity-50 cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
           </button>
@@ -121,7 +121,7 @@ const Products = () => {
           <button
             onClick={handleNext}
             disabled={page === totalPages}
-            className="px-3 py-2 rounded-md bg-purple-100 text-purple-800 hover:bg-purple-200 flex items-center disabled:opacity-50"
+            className="px-3 py-2 rounded-md bg-purple-100 text-purple-800 hover:bg-purple-200 flex items-center disabled:opacity-50 cursor-pointer"
           >
             Siguiente <ChevronRight className="w-4 h-4 ml-1" />
           </button>
