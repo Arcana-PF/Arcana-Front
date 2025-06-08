@@ -11,7 +11,7 @@ export default function Home() {
         <ComponentSlider />
       </section>
 
-      {/* Hero Stats - Versión mejorada */}
+      {/* Hero Stats */}
       <section className="py-16 bg-gradient-to-br from-purple-900 to-indigo-900 relative overflow-hidden">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0 bg-[url('/images/pattern.svg')] bg-repeat opacity-10"></div>
@@ -36,7 +36,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Categorías principales - Versión más oscura */}
+      {/* Categorías principales */}
       <section className="py-20 bg-gray-900 text-white">
         <div className="max-w-screen-xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -165,7 +165,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonios - Con diseño oscuro */}
+      {/* Testimonios */}
       <section className="py-20 bg-gray-900">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -215,7 +215,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Newsletter - Con diseño oscuro */}
+      {/* Newsletter  */}
       <section className="py-20 bg-gray-900">
         <div className="max-w-2xl mx-auto px-4 text-center">
           <div className="bg-gray-800 rounded-2xl p-12 shadow-xl border border-gray-700">
