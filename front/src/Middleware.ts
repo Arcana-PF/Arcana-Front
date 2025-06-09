@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const { pathname, origin } = request.nextUrl;
@@ -10,7 +10,12 @@ export function middleware(request: NextRequest) {
   let userData;
   if (userSessionCookie) {
     try {
-      userData = JSON.parse(userSessionCookie);
+      // Verificar que el valor tenga un formato JSON
+      if (userSessionCookie.startsWith('{') && userSessionCookie.endsWith('}')) {
+        userData = JSON.parse(userSessionCookie);
+      } else {
+        console.error("Formato inválido en la cookie userSession:", userSessionCookie);
+      }
     } catch (error) {
       console.error("Error al parsear la cookie:", error);
     }
@@ -25,7 +30,7 @@ export function middleware(request: NextRequest) {
   const isAuthRoute = authRoutes.includes(pathname);
 
   console.log('Middleware userData:', userData);
-  
+
   if (isProtectedRoute && !isAuthenticated) {
     const loginUrl = new URL('/login', origin);
     loginUrl.searchParams.set('redirect', pathname);
@@ -39,6 +44,11 @@ export function middleware(request: NextRequest) {
   // Redirigir admins a su perfil exclusivo
   if (pathname === '/profile' && isAdmin) {
     return NextResponse.redirect(new URL('/profileadmin', origin));
+  }
+
+  // Redirigir a la página de inicio si se accede a /profileadmin sin ser admin
+  if (pathname === '/profileadmin' && !isAdmin) {
+    return NextResponse.redirect(new URL('/profile', origin));
   }
 
   return NextResponse.next();
