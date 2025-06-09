@@ -31,8 +31,10 @@ export default function Navbar() {
     { name: "Tarot", label: "Tarot & Oráculos" },
     { name: "Cristales", label: "Cristales & Gemas" },
     { name: "Inciensos", label: "Inciensos" },
-    { name: "Libros", label: "Libros Místicos" },
+    { name: "Sahumerios", label: "Sahumerios" },
     { name: "Velas", label: "Velas Rituales" },
+    { name: "Libros", label: "Libros Místicos" },
+    { name: "Estatuillas", label: "Estatuillas" },
   ]
 
   // Cargar los productos desde el helper al montar el componente
