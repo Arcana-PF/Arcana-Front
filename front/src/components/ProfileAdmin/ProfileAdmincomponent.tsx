@@ -2,21 +2,9 @@
 import { useAuth } from "@/context/AuthContext"
 import { User, MapPin, Edit, Phone, Sparkles } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
 
 const PerfilAdmin = () => {
   const { userData } = useAuth()
-
-  
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!userData) {
-      router.push('/login');
-    }
-  }, [userData, router]);
-
   if (!userData) {
     return <div>Cargando...</div>; // Puedes mostrar un spinner o mensaje de carga
   }
@@ -86,14 +74,6 @@ const PerfilAdmin = () => {
                   <MapPin className="w-4 h-4 text-yellow-500" />
                   <p className="font-medium text-white">{userData?.user?.address || "No especificada"}</p>
                 </div>
-              </div>
-            </div>
-
-            {/* ID del usuario (útil para desarrollo) */}
-            <div className="mt-6 pt-6 border-t border-yellow-500/20">
-              <div className="bg-purple-900/30 p-4 rounded-xl border border-purple-500/30">
-                <h3 className="text-xs font-medium text-purple-400 mb-2 uppercase tracking-wide">ID del Iniciado</h3>
-                <p className="font-mono text-purple-300 text-sm">#{userData?.user?.id}</p>
               </div>
             </div>
           </div>

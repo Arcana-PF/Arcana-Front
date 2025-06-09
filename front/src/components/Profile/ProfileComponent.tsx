@@ -2,20 +2,9 @@
 import { useAuth } from "@/context/AuthContext"
 import { User, MapPin, Edit, Phone, Sparkles } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
 
 const PerfilUsuario = () => {
   const { userData } = useAuth()
-
-  
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!userData) {
-      router.push('/login');
-    }
-  }, [userData, router]);
 
   if (!userData) {
     return <div>Cargando...</div>; // Puedes mostrar un spinner o mensaje de carga
