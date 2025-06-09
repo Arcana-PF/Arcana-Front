@@ -1,31 +1,38 @@
-'use client';
+"use client"
 
-import React, { useState } from 'react';
-import CardList from '@/components/CardList';
-import {
-  Sparkles,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
+import type React from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
+import CardList from "@/components/CardList"
+import { Sparkles, ChevronLeft, ChevronRight } from "lucide-react"
 
 const Products = () => {
-  const [sort, setSort] = useState('Recomendados');
-  const [page, setPage] = useState(1);
-  const [category, setCategory] = useState('Todos');
-  const [totalPages, setTotalPages] = useState(1);
+  const searchParams = useSearchParams()
+  const [sort, setSort] = useState("Recomendados")
+  const [page, setPage] = useState(1)
+  const [category, setCategory] = useState("Todos")
+  const [totalPages, setTotalPages] = useState(1)
+
+  // Leer parámetros de la URL al cargar
+  useEffect(() => {
+    const categoryParam = searchParams.get("category")
+    if (categoryParam) {
+      setCategory(categoryParam)
+    }
+  }, [searchParams])
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSort(e.target.value);
-    setPage(1);
-  };
+    setSort(e.target.value)
+    setPage(1)
+  }
 
   const handlePrev = () => {
-    if (page > 1) setPage(page - 1);
-  };
+    if (page > 1) setPage(page - 1)
+  }
 
   const handleNext = () => {
-    if (page < totalPages) setPage(page + 1);
-  };
+    if (page < totalPages) setPage(page + 1)
+  }
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-purple-50 to-gray-50">
@@ -46,17 +53,17 @@ const Products = () => {
         {/* Categorías */}
         <div className="flex overflow-x-auto pb-4 mb-8 scrollbar-hide">
           <div className="flex space-x-2">
-            {['Todos', 'Amuletos', 'Tarot', 'Cristales', 'Inciensos', 'Libros', 'Velas'].map((cat) => (
+            {["Todos", "Amuletos", "Tarot", "Cristales", "Inciensos", "Libros", "Velas"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => {
-                  setCategory(cat);
-                  setPage(1);
+                  setCategory(cat)
+                  setPage(1)
                 }}
                 className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors cursor-pointer ${
                   cat === category
-                    ? 'bg-yellow-500 text-black font-semibold'
-                    : 'bg-white text-purple-800 border border-purple-200 hover:bg-purple-100'
+                    ? "bg-yellow-500 text-black font-semibold"
+                    : "bg-white text-purple-800 border border-purple-200 hover:bg-purple-100"
                 }`}
               >
                 {cat}
@@ -67,7 +74,9 @@ const Products = () => {
 
         {/* Título y ordenamiento */}
         <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
-          <h2 className="text-2xl font-bold text-purple-900">Productos Destacados</h2>
+          <h2 className="text-2xl font-bold text-purple-900">
+            {category === "Todos" ? "Productos Destacados" : `Categoría: ${category}`}
+          </h2>
           <div className="flex items-center space-x-2">
             <label htmlFor="sort" className="text-sm text-purple-700">
               Ordenar por:
@@ -87,12 +96,7 @@ const Products = () => {
         </div>
 
         {/* Grid de productos */}
-        <CardList
-          sort={sort}
-          page={page}
-          category={category}
-          onTotalPagesChange={(total) => setTotalPages(total)}
-        />
+        <CardList sort={sort} page={page} category={category} onTotalPagesChange={(total) => setTotalPages(total)} />
       </section>
 
       {/* Paginación */}
@@ -110,9 +114,7 @@ const Products = () => {
               key={p}
               onClick={() => setPage(p)}
               className={`w-10 h-10 rounded-md transition-colors ${
-                p === page
-                  ? 'bg-yellow-500 text-black font-semibold'
-                  : 'bg-white text-purple-800 hover:bg-purple-100'
+                p === page ? "bg-yellow-500 text-black font-semibold" : "bg-white text-purple-800 hover:bg-purple-100"
               }`}
             >
               {p}
@@ -148,7 +150,7 @@ const Products = () => {
         </div>
       </section>
     </div>
-  );
-};
+  )
+}
 
-export default Products;
+export default Products

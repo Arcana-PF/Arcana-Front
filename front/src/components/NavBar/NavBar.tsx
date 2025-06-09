@@ -6,10 +6,10 @@ import Image from "next/image"
 import { useAuth } from "@/context/AuthContext"
 import { getProductsDB } from "@/utils/product.helper"
 import type { IProduct } from "@/types"
-import { Search, ShoppingCart, UserIcon, Menu, LogOut, UserPlus, X } from "lucide-react"
+import { Search, ShoppingCart, UserIcon, Menu, LogOut, UserPlus, X, ChevronDown } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Swal from "sweetalert2"
-import Cookies from 'js-cookie'
+import Cookies from "js-cookie"
 
 export default function Navbar() {
   const { userData, setUserData } = useAuth()
@@ -17,36 +17,77 @@ export default function Navbar() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showResults, setShowResults] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [categoriesOpen, setCategoriesOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+  const categoriesRef = useRef<HTMLDivElement>(null)
 
   const [allProducts, setAllProducts] = useState<IProduct[]>([])
   const [loadingProducts, setLoadingProducts] = useState(false)
 
+  // Categorías disponibles
+  const categories = [
+    { name: "Todos", label: "Todos los Productos" },
+    { name: "Amuletos", label: "Amuletos" },
+    { name: "Tarot", label: "Tarot & Oráculos" },
+    { name: "Cristales", label: "Cristales & Gemas" },
+    { name: "Inciensos", label: "Inciensos" },
+    { name: "Libros", label: "Libros Místicos" },
+    { name: "Velas", label: "Velas Rituales" },
+  ]
 
   // Cargar los productos desde el helper al montar el componente
   useEffect(() => {
     async function fetchProducts() {
       try {
-        setLoadingProducts(true);
-        const products = await getProductsDB();
-        setAllProducts(products);
+        setLoadingProducts(true)
+        const products = await getProductsDB()
+        setAllProducts(products)
       } catch (error: unknown) {
         if (error instanceof Error) {
-          console.error("Error fetching products:", error.message);
+          console.error("Error fetching products:", error.message)
         } else {
-          console.error("Error desconocido al obtener productos:", error);
+          console.error("Error desconocido al obtener productos:", error)
         }
       } finally {
-        setLoadingProducts(false);
+        setLoadingProducts(false)
       }
     }
-    fetchProducts();
-  }, []);
+    fetchProducts()
+  }, [])
+
+  // Cerrar dropdowns al hacer click fuera
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowResults(false)
+      }
+      if (categoriesRef.current && !categoriesRef.current.contains(event.target as Node)) {
+        setCategoriesOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   // Filtrar productos según el término de búsqueda
   const filteredProducts = allProducts.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()),
   )
+
+  // Manejar navegación a categoría
+  const handleCategoryClick = (categoryName: string) => {
+    setCategoriesOpen(false)
+    setMenuOpen(false)
+
+    if (categoryName === "Todos") {
+      router.push("/products")
+    } else {
+      router.push(`/products?category=${encodeURIComponent(categoryName)}`)
+    }
+  }
 
   // Manejar el cierre de sesión con confirmación
   const handleLogout = async () => {
@@ -67,19 +108,19 @@ export default function Navbar() {
       url("/images/magic-sparkles.gif")
       center top
       no-repeat
-    `
-    });
+    `,
+    })
 
     if (isConfirmed) {
       try {
         //  Limpiar el estado del frontend
-        setUserData(null);
+        setUserData(null)
 
         // Eliminar datos del localStorage
-        localStorage.removeItem("userSession");
+        localStorage.removeItem("userSession")
         // Borrar todas las cookies accesibles
 
-        Cookies.remove('userSession')
+        Cookies.remove("userSession")
 
         await Swal.fire({
           title: "Conexión cerrada",
@@ -93,24 +134,23 @@ export default function Navbar() {
           showConfirmButton: false,
           willClose: () => {
             //Redireccionar después de cerrar
-            router.push("/");
-            router.refresh(); // Para asegurar que se actualicen los datos
-          }
-        });
-
+            router.push("/")
+            router.refresh() // Para asegurar que se actualicen los datos
+          },
+        })
       } catch (error) {
-        console.error("Error en el ritual de cierre:", error);
+        console.error("Error en el ritual de cierre:", error)
         await Swal.fire({
           title: "¡Protecciones místicas activas!",
           text: "El cierre de sesión no se completó completamente. Por favor, intenta nuevamente.",
           icon: "error",
           confirmButtonColor: "#7c3aed",
           background: "#0e0a1f",
-          color: "#e5e7eb"
-        });
+          color: "#e5e7eb",
+        })
       }
     }
-  };
+  }
 
   const handleCartClick = () => {
     router.push("/cart")
@@ -171,7 +211,10 @@ export default function Navbar() {
                     0
                   </span>
                 </button>
-                <Link href={userData?.user.isAdmin ? "/profileadmin" : "/profile"} className="p-2 hover:text-yellow-400 transition-colors">
+                <Link
+                  href={userData?.user.isAdmin ? "/profileadmin" : "/profile"}
+                  className="p-2 hover:text-yellow-400 transition-colors"
+                >
                   <UserIcon className="w-5 h-5" />
                 </Link>
                 <button
@@ -215,9 +258,36 @@ export default function Navbar() {
             <Link href="/products" className="text-sm font-medium hover:text-yellow-400 transition-colors py-1">
               Todos los Productos
             </Link>
-            <Link href="/categories" className="text-sm font-medium hover:text-yellow-400 transition-colors py-1">
-              Categorías
-            </Link>
+
+            {/* Dropdown de Categorías */}
+            <div className="relative" ref={categoriesRef}>
+              <button
+                onClick={() => setCategoriesOpen(!categoriesOpen)}
+                className="flex items-center text-sm font-medium hover:text-yellow-400 transition-colors py-1 gap-1"
+              >
+                Categorías
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-200 ${categoriesOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {categoriesOpen && (
+                <div className="absolute top-full left-0 mt-2 w-56 bg-purple-900/95 backdrop-blur-sm border border-yellow-500/30 rounded-lg shadow-lg z-30">
+                  <div className="py-2">
+                    {categories.map((category) => (
+                      <button
+                        key={category.name}
+                        onClick={() => handleCategoryClick(category.name)}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-yellow-500/10 hover:text-yellow-400 transition-colors"
+                      >
+                        {category.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <Link href="/about" className="text-sm font-medium hover:text-yellow-400 transition-colors py-1">
               Sobre Nosotros
             </Link>
@@ -256,13 +326,34 @@ export default function Navbar() {
               >
                 Productos
               </Link>
-              <Link
-                href="/categories"
-                onClick={() => setMenuOpen(false)}
-                className="py-2 hover:text-yellow-400 transition-colors border-b border-yellow-500/10"
-              >
-                Categorías
-              </Link>
+
+              {/* Categorías en móvil */}
+              <div className="border-b border-yellow-500/10">
+                <button
+                  onClick={() => setCategoriesOpen(!categoriesOpen)}
+                  className="w-full text-left py-2 hover:text-yellow-400 transition-colors flex items-center justify-between"
+                >
+                  Categorías
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${categoriesOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {categoriesOpen && (
+                  <div className="pl-4 pb-2">
+                    {categories.map((category) => (
+                      <button
+                        key={category.name}
+                        onClick={() => handleCategoryClick(category.name)}
+                        className="block w-full text-left py-1 text-sm text-purple-200 hover:text-yellow-400 transition-colors"
+                      >
+                        {category.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <Link
                 href="/about"
                 onClick={() => setMenuOpen(false)}
@@ -355,11 +446,7 @@ export default function Navbar() {
                       }}
                     >
                       <div className="relative w-10 h-10 rounded-md overflow-hidden border border-yellow-500/30 mr-3">
-                        <img
-                          src={product.imgUrl || "/placeholder.svg"}
-                          alt={product.name}
-                          className="object-cover"
-                        />
+                        <img src={product.imgUrl || "/placeholder.svg"} alt={product.name} className="object-cover" />
                       </div>
                       <div>
                         <p className="text-sm font-medium">{product.name}</p>
@@ -370,9 +457,7 @@ export default function Navbar() {
                 ))}
               </div>
             ) : (
-              <div className="p-4 text-center text-sm text-gray-300">
-                No se encontraron productos
-              </div>
+              <div className="p-4 text-center text-sm text-gray-300">No se encontraron productos</div>
             )}
           </div>
         )}
