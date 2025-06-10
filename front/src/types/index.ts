@@ -7,6 +7,8 @@ export interface IProduct {
     imgUrl: string;  
     category: string;
     quantity?: number;
+    rating?: number;
+    onAddToFavorites?: () => void;
 }
 
 export interface ICategory{

@@ -1,3 +1,5 @@
+'use client';
+import React from "react";
 import { IProduct } from "@/types";
 import { Heart, ShoppingCart, Star } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -169,6 +171,7 @@ const Card: React.FC<ICardProps> = ({
               {stock > 0 ? `Disponible (${stock})` : 'Agotado'}
             </p>
           </div>
+          
           
           <button 
             className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white rounded-lg transition-all shadow-md flex items-center justify-center z-20"
