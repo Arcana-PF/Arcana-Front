@@ -5,7 +5,7 @@ const DetailProduct = async ({params} : {params: Promise<{productID: string}>}) 
   const productID = (await params).productID
   const product = await getProductById(productID)
     return(
-      <div className="min-h-screen w-full bg-black">
+      <div className="min-h-screen w-full white">
         <ProductDetail{...product} />
       </div>
     )
