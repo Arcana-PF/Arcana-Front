@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Card from "./Card";
-import mock_products from "@/utils/mock_products";
+import { getProductsDB } from "@/utils/product.helper";
 import { useRouter } from "next/navigation";
+import { IProduct } from "@/types";
 
 interface CardListProps {
   sort?: string;
@@ -21,10 +22,26 @@ const CardList: React.FC<CardListProps> = ({
   onTotalPagesChange,
 }) => {
   const router = useRouter();
-  
-  let filtered = category === "Todos"
-    ? mock_products
-    : mock_products.filter((product) => product.category === category);
+  const [products, setProducts] = useState<IProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await getProductsDB();
+        setProducts(data);
+      } catch (err) {
+        setError("Error al cargar productos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  let filtered = category === "Todos" ? products : products.filter((product) => product.category === category);
 
   switch (sort) {
     case "Precio: Menor a Mayor":
@@ -51,15 +68,27 @@ const CardList: React.FC<CardListProps> = ({
   const startIndex = (page - 1) * itemsPerPage;
   const paginated = filtered.slice(startIndex, startIndex + itemsPerPage);
 
+  if (loading) {
+    return <div className="text-center text-gray-500">Cargando productos...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500">{error}</div>;
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-4 p-4 justify-center">
-      {paginated.map((product) => (
-        <Card 
-          key={product.id}
-          {...product}
-          onClick={() => router.push(`/product/${product.id}`)}
-        />
-      ))}
+      {paginated.length ? (
+        paginated.map((product) => (
+          <Card 
+            key={product.id}
+            {...product}
+            onClick={() => router.push(`/product/${product.id}`)}
+          />
+        ))
+      ) : (
+        <div className="text-center text-gray-500">No hay productos disponibles.</div>
+      )}
     </div>
   );
 };
