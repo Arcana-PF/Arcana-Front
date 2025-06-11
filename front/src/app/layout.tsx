@@ -7,7 +7,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { SeasonalOffer } from "@/components/Notification/SeasonOff";
 import { Inter } from 'next/font/google';
-
+import ChatBotComponent from "@/components/Chatbot/ChatbotComponent";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <NavBar />
         <SeasonalOffer />
         {children}
+        <ChatBotComponent />
         <Footer />
         </AuthProvider>
         </CartProvider>
