@@ -5,9 +5,15 @@ import { Heart, ShoppingCart, Star } from 'lucide-react';
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 
-const ProductDetail: React.FC<IProduct> = ({ id, name, imgUrl, description, stock, price, category, rating = 4.5, onAddToFavorites }) => {
+const ProductDetail: React.FC<IProduct> = ({ id, name, imgUrl, description, stock, price, categories, rating = 4.5, onAddToFavorites }) => {
   const { userData } = useAuth();
   const [quantity, setQuantity] = useState(1);
+  const category = categories.length > 0 ? categories[0].name : "Sin categoría"; // Extrae la primera categoría
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newQuantity = Math.max(1, Math.min(stock, parseInt(e.target.value, 10) || 1));
+    setQuantity(newQuantity);
+  };
 
   const handleAddToCart = () => {
     if (!userData?.token) {
@@ -19,7 +25,7 @@ const ProductDetail: React.FC<IProduct> = ({ id, name, imgUrl, description, stoc
         confirmButtonText: "Ir al login",
       }).then((result) => {
         if (result.isConfirmed) {
-          window.location.href = "/login";
+          window.location.href = "/login"; // Se podría usar useRouter en Next.js
         }
       });
       return;
@@ -38,8 +44,9 @@ const ProductDetail: React.FC<IProduct> = ({ id, name, imgUrl, description, stoc
     const productIndex = cart.findIndex((item) => item.id === id);
 
     if (productIndex !== -1 && cart[productIndex]) {
-      if ((cart[productIndex].quantity ?? 0) + quantity <= stock) {
-        cart[productIndex]!.quantity = (cart[productIndex]!.quantity ?? 0) + quantity;
+      const updatedQuantity = (cart[productIndex].quantity ?? 0) + quantity;
+      if (updatedQuantity <= stock) {
+        cart[productIndex].quantity = updatedQuantity;
       } else {
         Swal.fire({
           icon: "error",
@@ -51,7 +58,7 @@ const ProductDetail: React.FC<IProduct> = ({ id, name, imgUrl, description, stoc
       }
     } else {
       if (stock >= quantity) {
-        cart.push({ id, name, imgUrl, description, stock, price, category, quantity });
+        cart.push({ id, name, imgUrl, description, stock, price, isActive: true, categories, quantity });
       } else {
         Swal.fire({
           icon: "error",
@@ -126,14 +133,14 @@ const ProductDetail: React.FC<IProduct> = ({ id, name, imgUrl, description, stoc
             </p>
           </div>
 
-          {/* Selector de cantidad con mejor diseño */}
+          {/* Selector de cantidad con validación */}
           <div className="flex items-center gap-6">
             <input
               type="number"
               min="1"
               max={stock}
               value={quantity}
-              onChange={(e) => setQuantity(parseInt(e.target.value, 10) || 1)}
+              onChange={handleQuantityChange}
               className="w-20 text-center bg-gray-800 text-white border border-yellow-600 rounded-lg py-2 text-lg"
             />
             <button
