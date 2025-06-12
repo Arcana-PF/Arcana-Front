@@ -17,7 +17,7 @@ export async function getProductsDB(): Promise<IProduct[]> {
     }
 }
 
-export async function getProductById(id: string): Promise<IProduct> {
+export async function getProductsById(id: string): Promise<IProduct> {
     try {
         const response = await fetch(`${APIURL}/products/${id}`);
 

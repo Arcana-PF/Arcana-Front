@@ -18,7 +18,7 @@ const Card: React.FC<ICardProps> = ({
   description, 
   price, 
   imgUrl, 
-  category,
+  categories,
   stock,
   rating = 4.5,
   onAddToFavorites,
@@ -26,7 +26,7 @@ const Card: React.FC<ICardProps> = ({
 }) => {
   const { userData } = useAuth();
   const router = useRouter();
-
+  const category = categories.length > 0 ? categories[0].name : "Sin categoría"; // Extrae la primera categoría
   const handleCardClick = (e: React.MouseEvent) => {
     // Solo navega si el click no fue en el botón de carrito/favoritos
     if (!(e.target as HTMLElement).closest('button')) {
@@ -87,8 +87,14 @@ const Card: React.FC<ICardProps> = ({
         return;
       }
       cart.push({ 
-        id, name, imgUrl, description, 
-        price, category, stock, 
+        id, 
+        name, 
+        imgUrl, 
+        description, 
+        price, 
+        stock, 
+        isActive: true, 
+        categories, 
         quantity: 1 
       });
     }

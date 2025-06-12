@@ -22,7 +22,7 @@ const CartView = () => {
     setTotal(newTotal);
   }, [cart]);
 
-  const handleRemoveItem = (id: number) => {
+  const handleRemoveItem = (id: string) => {
     Swal.fire({
       title: "¿Eliminar del carrito?",
       text: "Este artículo será removido de tu bolsa mística",
@@ -49,7 +49,7 @@ const CartView = () => {
     });
   };
 
-  const handleUpdateQuantity = (id: number, newQuantity: number) => {
+  const handleUpdateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity < 1) return; // Evita cantidades inválidas
     updateCartQuantity(id, newQuantity); // Función en el contexto `useCart`
   };
