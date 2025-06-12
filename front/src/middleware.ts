@@ -48,7 +48,7 @@ export function middleware(request: NextRequest) {
 
   // Redirigir a la página de inicio si se accede a /profileadmin sin ser admin
   if (pathname === '/profileadmin' && !isAdmin) {
-    return NextResponse.redirect(new URL('/profile', origin))
+    return NextResponse.redirect(new URL('/profile', origin));
   }
 
   return NextResponse.next();
