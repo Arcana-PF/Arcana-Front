@@ -5,6 +5,7 @@ import { Heart, ShoppingCart, Star } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface ICardProps extends IProduct {
   rating?: number;
@@ -129,7 +130,7 @@ const Card: React.FC<ICardProps> = ({
     >
       {/* Imagen del producto */}
       <div className="relative h-56 w-full overflow-hidden bg-gray-100">
-        <img
+        <Image
           src={imgUrl}
           alt={`${name} - ${category}`}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

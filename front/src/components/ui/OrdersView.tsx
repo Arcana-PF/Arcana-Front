@@ -1,23 +1,23 @@
-'use client'
+'use client';
 import { useAuth } from '@/context/AuthContext';
 import { IOrder } from '@/types';
 import { getOrders } from '@/utils/Orders.helper';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 const OrdersView = () => {
   const { userData } = useAuth();
   const [orders, setOrders] = useState<IOrder[]>([]);
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     if (userData?.token) {
       const response = await getOrders(userData?.token);
       setOrders(response);
     }
-  };
+  }, [userData?.token]); // Ahora `loadOrders` se memoriza correctamente
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [loadOrders]);
 
   console.log(orders);
 

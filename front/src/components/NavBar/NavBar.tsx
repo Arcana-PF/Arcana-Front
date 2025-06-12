@@ -448,7 +448,7 @@ export default function Navbar() {
                       }}
                     >
                       <div className="relative w-10 h-10 rounded-md overflow-hidden border border-yellow-500/30 mr-3">
-                        <img src={product.imgUrl || "/placeholder.svg"} alt={product.name} className="object-cover" />
+                        <Image src={product.imgUrl || "/placeholder.svg"} alt={product.name} className="object-cover" />
                       </div>
                       <div>
                         <p className="text-sm font-medium">{product.name}</p>

@@ -4,6 +4,7 @@ import { IProduct } from '@/types';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
+import Image from 'next/image';
 
 const ProductDetail: React.FC<IProduct> = ({ id, name, imgUrl, description, stock, price, categories, rating = 4.5, onAddToFavorites }) => {
   const { userData } = useAuth();
@@ -91,7 +92,7 @@ const ProductDetail: React.FC<IProduct> = ({ id, name, imgUrl, description, stoc
 
       {/* Imagen del producto */}
       <div className="relative w-full h-auto overflow-hidden bg-gray-100">
-        <img
+        <Image
           src={imgUrl}
           alt={`${name} - ${category}`}
           className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"

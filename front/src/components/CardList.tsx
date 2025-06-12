@@ -32,6 +32,7 @@ const CardList: React.FC<CardListProps> = ({
         const data = await getProductsDB();
         setProducts(data);
       } catch (err) {
+        console.error("Error fetching products:", err);
         setError("Error al cargar productos.");
       } finally {
         setLoading(false);

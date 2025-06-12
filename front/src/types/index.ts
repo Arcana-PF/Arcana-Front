@@ -64,3 +64,11 @@ export interface IOrder {
     date: Date;
     products: IProduct[];
 }
+
+export interface ICart {
+    id: string;
+    quantity: number;
+    priceAtPurchase: number;
+    products: IProduct[];
+    totalPrice: number;
+}
