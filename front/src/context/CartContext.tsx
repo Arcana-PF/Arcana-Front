@@ -1,19 +1,25 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { IProduct } from "@/types";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import { IProduct, ICart } from "@/types";
 import { useAuth } from "@/context/AuthContext";
-
-interface CartItem extends IProduct {
-  quantity: number;
-}
+import {
+  addToCartHelper,
+  removeFromCartHelper,
+  updateCartQuantityHelper,
+  clearCartHelper,
+  calculateTotalPrice,
+  fetchCartFromDB,
+  saveCartToDB,
+} from "@/utils/cart.helper"; // ✅ Importa helpers
 
 interface CartContextType {
-  cart: CartItem[];
+  cart: ICart;
   addToCart: (product: IProduct) => void;
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
   updateCartQuantity: (id: string, quantity: number) => void;
+  totalPrice: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -28,71 +34,62 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const { userData } = useAuth();
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<ICart>({ id: "cart-1", products: [], totalPrice: 0, quantity: 0, priceAtPurchase: 0 });
 
-  // ✅ Cargar carrito desde localStorage cuando cambia el usuario
+  // ✅ Cargar carrito desde la base de datos cuando el usuario cambia
   useEffect(() => {
-    if (userData?.user?.id) {
-      try {
-        const storedCart = localStorage.getItem(`cart_${userData.user.id}`);
-        setCart(storedCart ? JSON.parse(storedCart) : []);
-      } catch (error) {
-        console.error("Error al recuperar el carrito:", error);
+    const loadCart = async () => {
+      if (userData?.user?.id) {
+        const storedCart = await fetchCartFromDB(userData.user.id, userData.token);
+        setCart(storedCart || { id: "cart-1", products: [], totalPrice: 0, quantity: 0, priceAtPurchase: 0 });
+      } else {
+        setCart({ id: "cart-1", products: [], totalPrice: 0, quantity: 0, priceAtPurchase: 0 });
       }
-    } else {
-      setCart([]);
-    }
+    };
+
+    loadCart();
   }, [userData]);
 
-  // ✅ Guardar carrito en localStorage cuando cambian los productos
-  useEffect(() => {
-    if (userData?.user?.id) {
-      try {
-        localStorage.setItem(`cart_${userData.user.id}`, JSON.stringify(cart));
-      } catch (error) {
-        console.error("Error al guardar el carrito:", error);
-      }
-    }
+  // ✅ Memoizar total del carrito
+  const totalPrice = useMemo(() => calculateTotalPrice(cart.products), [cart]);
+
+  // ✅ Agregar producto al carrito
+const addToCart = useCallback(async (product: IProduct) => {
+  if (!userData || !userData.user?.id) return; //  Asegura que userData no sea null
+
+  const updatedCart = addToCartHelper(cart, product, 1);
+  setCart(updatedCart);
+  await saveCartToDB(updatedCart.products, userData.token);
+}, [cart, userData]);
+
+  // ✅ Remover producto del carrito
+const removeFromCart = useCallback(async (productId: string) => {
+  if (!userData || !userData.user?.id) return; //  Asegura que userData no sea null
+
+  const updatedCart = removeFromCartHelper(cart, productId);
+  setCart(updatedCart);
+  await saveCartToDB(updatedCart.products, userData.token);
+}, [cart, userData]);
+
+  // ✅ Vaciar el carrito
+  const clearCart = useCallback(async () => {
+  if (!userData || !userData.user?.id) return; // Asegura que userData no sea null
+    const emptyCart = clearCartHelper();
+    setCart(emptyCart);
+    await saveCartToDB(emptyCart.products, userData.token);
+  }, [userData]);
+
+  // ✅ Actualizar cantidad de productos
+  const updateCartQuantity = useCallback(async (id: string, quantity: number) => {
+    
+  if (!userData || !userData.user?.id) return; // ✅ Asegura que userData no sea null
+    const updatedCart = updateCartQuantityHelper(cart, id, quantity);
+    setCart(updatedCart);
+    await saveCartToDB(updatedCart.products, userData.token);
   }, [cart, userData]);
 
-  // ✅ Agregar producto al carrito con límite de stock
-  const addToCart = (product: IProduct) => {
-    setCart((prevCart) => {
-      const exist = prevCart.find((p) => p.id === product.id);
-      if (exist) {
-        const updatedQuantity = Math.min(exist.quantity + 1, product.stock);
-        return prevCart.map((p) =>
-          p.id === product.id ? { ...p, quantity: updatedQuantity } : p
-        );
-      }
-      return [...prevCart, { ...product, quantity: 1 }];
-    });
-  };
-
-  // ✅ Eliminar producto del carrito
-  const removeFromCart = (productId: string) => {
-    setCart((prevCart) => prevCart.filter((product) => product.id !== productId));
-  };
-
-  // ✅ Vaciar el carrito y limpiar localStorage
-  const clearCart = () => {
-    setCart([]);
-    if (userData?.user?.id) {
-      localStorage.removeItem(`cart_${userData.user.id}`);
-    }
-  };
-
-  // ✅ Actualizar cantidad con restricciones
-  const updateCartQuantity = (id: string, quantity: number) => {
-    setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(1, Math.min(quantity, item.stock)) } : item
-      )
-    );
-  };
-
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, updateCartQuantity }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, updateCartQuantity, totalPrice }}>
       {children}
     </CartContext.Provider>
   );

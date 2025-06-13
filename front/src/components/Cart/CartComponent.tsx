@@ -1,217 +1,78 @@
 "use client";
 
-import { ShoppingCart, X, Sparkles, ArrowRight } from "lucide-react";
+import React from "react";
 import { useCart } from "@/context/CartContext";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import Swal from "sweetalert2";
-import { useAuth } from "@/context/AuthContext";
-import Image from "next/image";
+import CheckoutComponent from "../Checkout/CheckoutComponent";
 
-const CartView = () => {
-  const { cart, removeFromCart, clearCart, updateCartQuantity } = useCart();
-  const { userData } = useAuth();
-
-  const [total, setTotal] = useState(0);
-
-  useEffect(() => {
-    const newTotal = cart.reduce(
-      (sum, item) => sum + item.price * (item.quantity || 1),
-      0
-    );
-    setTotal(newTotal);
-  }, [cart]);
-
-  const handleRemoveItem = (id: string) => {
-    Swal.fire({
-      title: "¿Eliminar del carrito?",
-      text: "Este artículo será removido de tu bolsa mística",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#7c3aed",
-      background: "#0e0a1f",
-      color: "#e5e7eb",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        removeFromCart(id);
-        Swal.fire({
-          title: "Artículo eliminado",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-          background: "#0e0a1f",
-          color: "#e5e7eb",
-        });
-      }
-    });
-  };
-
-  const handleUpdateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return; // Evita cantidades inválidas
-    updateCartQuantity(id, newQuantity); // Función en el contexto `useCart`
-  };
-
-  const handleCheckout = () => {
-    if (!cart.length) {
-      Swal.fire({
-        icon: "error",
-        title: "Carrito vacío",
-        text: "No puedes realizar una compra sin productos.",
-        confirmButtonColor: "#ef4444",
-      });
-      return;
-    }
-
-    Swal.fire({
-      title: "¿Completar compra mística?",
-      text: "Serás redirigido al plano de pago",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Continuar",
-      cancelButtonText: "Seguir comprando",
-      confirmButtonColor: "#facc15",
-      cancelButtonColor: "#7c3aed",
-      background: "#0e0a1f",
-      color: "#e5e7eb",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        clearCart();
-        window.location.href = "/checkout"; // Simulación de pago
-      }
-    });
-  };
-
-  if (!userData) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-950">
-        <div className="text-center">
-          <Sparkles className="w-12 h-12 text-yellow-500 mx-auto mb-4 animate-pulse" />
-          <p className="text-white text-lg">
-            Consultando el grimorio del carrito...
-          </p>
-        </div>
-      </div>
-    );
-  }
+const CartComponent = () => {
+  const { cart, removeFromCart, updateCartQuantity, totalPrice } = useCart();
 
   return (
-    <div className="mt-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-10">
-        <ShoppingCart className="w-10 h-10 text-yellow-500 mx-auto mb-2" />
-        <h1 className="text-4xl font-extrabold text-yellow-500">
-          Carro Arcano
-        </h1>
-      </div>
+    <div className="max-w-lg mx-auto mt-10 bg-white border-gray-200 rounded-3xl shadow-xl overflow-hidden p-8 space-y-6">
+      <h2 className="text-3xl font-bold text-yellow-500">Tu carrito</h2>
 
-      {cart.length ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Lista de productos */}
-          <div className="lg:col-span-2 space-y-6">
-            {cart.map((item) => (
-              <div
-                key={item.id}
-                className="flex flex-col md:flex-row items-start bg-gray-900/60 p-6 rounded-xl border border-yellow-500/20"
-              >
-                <Image
-                  src={item.imgUrl || "/placeholder-item.jpg"}
-                  alt={item.name}
-                  width={96}
-                  height={96}
-                  className="rounded-lg border border-yellow-500/30 object-cover"
-                />
-                <div className="md:ml-6 mt-4 md:mt-0 flex-1">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-semibold text-white">
-                      {item.name}
-                    </h3>
-                    <button
-                      onClick={() => handleRemoveItem(item.id)}
-                      className="text-gray-400 hover:text-red-400 transition-colors"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <p className="text-sm text-yellow-500 mt-1">
-                    ${item.price.toFixed(2)}
-                  </p>
-                  {/* Selector de cantidad */}
-                  <div className="flex items-center gap-2 mt-2">
-                    <button
-                      onClick={() =>
-                        handleUpdateQuantity(item.id, item.quantity - 1)
-                      }
-                      className="text-gray-300 px-2 py-1 border rounded hover:text-yellow-400 transition"
-                    >
-                      -
-                    </button>
-                    <span className="text-white">{item.quantity}</span>
-                    <button
-                      onClick={() =>
-                        handleUpdateQuantity(item.id, item.quantity + 1)
-                      }
-                      className="text-gray-300 px-2 py-1 border rounded hover:text-yellow-400 transition"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <p className="text-sm text-gray-300 mt-2">
-                    Total: ${(item.price * (item.quantity || 1)).toFixed(2)} (
-                    {item.quantity || 1} unidad/es)
-                  </p>
+      {/* ✅ Verificar productos en el carrito correctamente */}
+      {cart.products.length === 0 ? (
+        <p className="text-center text-gray-500 text-lg">El carrito está vacío.</p>
+      ) : (
+        <ul className="space-y-4">
+          {cart.products.map((item) => (
+            <li
+              key={item.id}
+              className="flex items-center bg-gray-100 rounded-xl p-4 shadow-md"
+            >
+              <img
+                src={item.imgUrl}
+                alt={item.name}
+                className="w-16 h-16 object-cover rounded-lg"
+              />
+              <div className="ml-4 flex-1">
+                <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
+                <p className="text-sm text-gray-600">Precio: ${item.price.toFixed(2)}</p>
+                <p className={`text-xs ${item.stock > 0 ? "text-green-600" : "text-red-600"}`}>
+                  {item.stock > 0 ? `Disponible (${item.stock})` : "Agotado"}
+                </p>
+
+                {/* ✅ Controles de cantidad asegurando valores correctos */}
+                <div className="flex items-center gap-4 mt-2">
+                  <button
+                    onClick={() => updateCartQuantity(item.id, Math.max(1, (item.quantity ?? 1) - 1))}
+                    disabled={(item.quantity ?? 1) <= 1}
+                    className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 disabled:opacity-50"
+                  >
+                    -
+                  </button>
+                  <span className="text-lg font-medium text-gray-900">{item.quantity ?? 1}</span>
+                  <button
+                    onClick={() => updateCartQuantity(item.id, Math.min((item.quantity ?? 1) + 1, item.stock ?? 1))}
+                    disabled={(item.quantity ?? 1) >= (item.stock ?? 1)}
+                    className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 disabled:opacity-50"
+                  >
+                    +
+                  </button>
                 </div>
-              </div>
-            ))}
-          </div>
 
-          {/* Resumen del pedido */}
-          <div className="bg-gray-900/70 p-6 rounded-xl border border-yellow-500/30">
-            <h2 className="text-xl font-semibold text-white mb-6">
-              Resumen del Pedido
-            </h2>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-gray-300">Subtotal</span>
-                <span className="text-white">${total.toFixed(2)}</span>
+                <button
+                  onClick={() => removeFromCart(item.id)}
+                  className="mt-2 px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all"
+                >
+                  Eliminar
+                </button>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-300">Envío</span>
-                <span className="text-white">$0.00</span>
-              </div>
-              <button
-                onClick={handleCheckout}
-                className="w-full mt-6 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold py-3 px-4 rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all flex items-center justify-center"
-              >
-                Realizar Pago
-                <Sparkles className="ml-2 w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-        
-      ) : // si no hay productos en el carrito
-       (
-        <div className="bg-gray-900/70 rounded-2xl p-12 border border-yellow-500/30 text-center">
-          <Sparkles className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">
-            Tu bolsa está vacía
-          </h2>
-          <p className="text-gray-300 mb-6">
-            Aún no has añadido elementos a tu carrito
-          </p>
-          <Link
-            href="/"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-black bg-yellow-500 hover:bg-yellow-400 transition-colors"
-          >
-            Explorar todos nuestros productos.
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Link>
-        </div>
+            </li>
+          ))}
+        </ul>
       )}
+
+      <h3 className="text-xl font-bold text-purple-700">
+        Total: ${totalPrice.toFixed(2)}
+      </h3>
+
+      <div className="mt-6">
+        <CheckoutComponent />
+      </div>
     </div>
   );
 };
 
-export default CartView;
+export default CartComponent;
