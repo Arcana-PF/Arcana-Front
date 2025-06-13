@@ -32,12 +32,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   // Guardar o limpiar datos según userData
-  useEffect(() => {
+ useEffect(() => {
   if (userData) {
     localStorage.setItem('userSession', JSON.stringify(userData));
-
-    // Usamos user.id o user.email como valor de cookie
-    Cookies.set('userSession', userData.user.email, {
+    Cookies.set("userSession", userData.validationToken, {
       path: '/',
       sameSite: 'lax',
     });
@@ -46,6 +44,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     Cookies.remove('userSession');
   }
 }, [userData]);
+
 
 
   return (
