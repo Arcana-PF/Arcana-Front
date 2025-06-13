@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { useAuth } from "@/context/AuthContext"
 import { getProductsDB } from "@/utils/product.helper"
 import type { IProduct } from "@/types"
@@ -166,7 +165,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <div className="relative w-42 h-30">
-              <Image src="/arcanaLogo2.png" alt="Logo Arcana" fill className="object-contain" />
+              <img src="/arcanaLogo2.png" alt="Logo Arcana" className="object-contain" />
             </div>
           </Link>
 

@@ -1,12 +1,20 @@
 export interface IProduct {
-    id: number;
+    id: string;
     name: string;
     description: string;
     price: number;
     stock: number;
-    imgUrl: string;  
-    category: string;
+    imgUrl: string;
+    isActive: boolean;
     quantity?: number;
+    rating?: number;
+    categories: {
+        id: string;
+        name: string;
+        isActive: boolean; // Antes era {}, mejor como boolean
+        products: string[]; // Antes era [], especificamos tipo como arreglo de strings
+    }[];
+    onAddToFavorites?: () => void;
 }
 
 export interface ICategory{
@@ -55,4 +63,12 @@ export interface IOrder {
     status: string;
     date: Date;
     products: IProduct[];
+}
+
+export interface ICart {
+    id: string;
+    quantity: number;
+    priceAtPurchase: number;
+    products: IProduct[];
+    totalPrice: number;
 }
