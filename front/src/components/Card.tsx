@@ -178,7 +178,7 @@ const Card: React.FC<ICardProps> = ({
             </p>
           </div>
           
-          
+          {!userData?.user.isAdmin &&(
           <button 
             className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white rounded-lg transition-all shadow-md flex items-center justify-center z-20"
             onClick={handleAddToCart}
@@ -186,6 +186,7 @@ const Card: React.FC<ICardProps> = ({
             <ShoppingCart className="w-5 h-5 cursor-pointer" />
             <span className="ml-2 text-sm font-medium cursor-pointer">Agregar</span>
           </button>
+          )}
         </div>
       </div>
     </div>

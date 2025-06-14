@@ -57,21 +57,21 @@ export default function Navbar() {
   }, [])
 
   // Cerrar dropdowns al hacer click fuera
+  const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowResults(false)
-      }
-      if (categoriesRef.current && !categoriesRef.current.contains(event.target as Node)) {
-        setCategoriesOpen(false)
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setShowResults(false);
+        setCategoriesOpen(false);
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("pointerdown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("pointerdown", handleClickOutside);
+    };
+  }, []);
 
   // Filtrar productos según el término de búsqueda
   const filteredProducts = allProducts.filter((product) =>
@@ -202,18 +202,21 @@ export default function Navbar() {
           <div className="flex items-center space-x-4">
             {userData ? (
               <>
-                <button
-                  onClick={handleCartClick}
-                  className="p-2 hover:text-yellow-400 transition-colors relative cursor-pointer"
-                  aria-label="Carrito"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  <span className="absolute -top-1 -right-1 bg-yellow-500 text-black text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    0
-                  </span>
-                </button>
+                {/* Solo mostrar carrito si NO es admin */}
+                {!userData?.user?.isAdmin && (
+                  <button
+                    onClick={handleCartClick}
+                    className="p-2 hover:text-yellow-400 transition-colors relative cursor-pointer"
+                    aria-label="Carrito"
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    <span className="absolute -top-1 -right-1 bg-yellow-500 text-black text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      0
+                    </span>
+                  </button>
+                )}
                 <Link
-                  href={userData?.user.isAdmin ? "/profileadmin" : "/profile"}
+                  href={Boolean(userData?.user?.isAdmin) ? "/profileadmin" : "/profile"}
                   className="p-2 hover:text-yellow-400 transition-colors"
                 >
                   <UserIcon className="w-5 h-5" />
@@ -380,7 +383,9 @@ export default function Navbar() {
                     <UserIcon className="w-4 h-4" />
                     Mi Perfil
                   </Link>
-                  <button
+                  
+                  { !userData?.user?.isAdmin &&(
+                    <button
                     onClick={() => {
                       handleCartClick()
                       setMenuOpen(false)
@@ -389,7 +394,8 @@ export default function Navbar() {
                   >
                     <ShoppingCart className="w-4 h-4" />
                     Carrito
-                  </button>
+                  </button>)}
+
                   <button
                     onClick={() => {
                       handleLogout()
@@ -437,7 +443,7 @@ export default function Navbar() {
             ) : filteredProducts.length > 0 ? (
               <div className="divide-y divide-yellow-500/10">
                 {filteredProducts.slice(0, 5).map((product) => (
-                  <Link href={`/product/${product.id}`} key={product.id}>
+                  <Link href={`/products/${product.id}`} key={product.id}>
                     <div
                       className="flex items-center p-3 hover:bg-yellow-500/10 cursor-pointer transition-colors"
                       onClick={() => {
