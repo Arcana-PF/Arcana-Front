@@ -93,23 +93,25 @@ const ProductDetail: React.FC<IProduct> = ({
           </div>
 
           {/* Selector de cantidad con validación */}
-          <div className="flex items-center gap-6">
-            <input
-              type="number"
-              min="1"
-              max={stock}
-              value={quantity}
-              onChange={handleQuantityChange}
-              className="w-20 text-center bg-gray-800 text-white border border-yellow-600 rounded-lg py-2 text-lg"
-            />
-            <button
-              className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white rounded-lg transition-all shadow-md flex items-center"
-              onClick={handleAddToCart}
-            >
-              <ShoppingCart className="w-5 h-5" />
-              <span className="ml-2 text-sm font-medium">Agregar</span>
-            </button>
-          </div>
+          {!userData?.user.isAdmin && (
+            <div className="flex items-center gap-6">
+              <input
+                type="number"
+                min="1"
+                max={stock}
+                value={quantity}
+                onChange={handleQuantityChange}
+                className="w-20 text-center bg-gray-800 text-white border border-yellow-600 rounded-lg py-2 text-lg"
+              />
+              <button
+                className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white rounded-lg transition-all shadow-md flex items-center"
+                onClick={handleAddToCart}
+              >
+                <ShoppingCart className="w-5 h-5" />
+                <span className="ml-2 text-sm font-medium">Agregar</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
