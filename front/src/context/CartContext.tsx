@@ -1,24 +1,22 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
-import { IProduct, ICart } from "@/types";
+import { ICart, IProduct } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import {
   addToCartHelper,
-  removeFromCartHelper,
-  updateCartQuantityHelper,
-  clearCartHelper,
-  calculateTotalPrice,
+  updateCartItemQuantity,
+  deleteCartItem,
+  clearCartDB,
   fetchCartFromDB,
-  saveCartToDB,
-} from "@/utils/cart.helper"; // ✅ Importa helpers
+} from "@/utils/cart.helper";
 
 interface CartContextType {
   cart: ICart;
   addToCart: (product: IProduct) => void;
-  removeFromCart: (productId: string) => void;
+  removeFromCart: (itemId: string) => void;
   clearCart: () => void;
-  updateCartQuantity: (id: string, quantity: number) => void;
+  updateCartQuantity: (itemId: string, quantity: number) => void;
   totalPrice: number;
 }
 
@@ -26,67 +24,81 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const useCart = () => {
   const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart debe usarse dentro de un CartProvider");
-  }
+  if (!context) throw new Error("useCart debe usarse dentro de un CartProvider");
   return context;
+};
+
+// Estado inicial del carrito
+const initialCart: ICart = {
+  id: "cart-1",
+  user: { id: "", name: "", email: "", phone: "", address: "", isAdmin: false, isActive: false },
+  items: [],
+  totalPrice: 0,
+  isActive: true,
 };
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const { userData } = useAuth();
-  const [cart, setCart] = useState<ICart>({ id: "cart-1", products: [], totalPrice: 0, quantity: 0, priceAtPurchase: 0 });
+  const [cart, setCart] = useState<ICart>(initialCart);
 
-  // ✅ Cargar carrito desde la base de datos cuando el usuario cambia
+  // Carga inicial del carrito basado en el usuario autenticado
   useEffect(() => {
     const loadCart = async () => {
       if (userData?.user?.id) {
-        const storedCart = await fetchCartFromDB(userData.user.id, userData.token);
-        setCart(storedCart || { id: "cart-1", products: [], totalPrice: 0, quantity: 0, priceAtPurchase: 0 });
+        const storedCart = await fetchCartFromDB(userData.token);
+        setCart(storedCart || { ...initialCart, user: userData.user });
       } else {
-        setCart({ id: "cart-1", products: [], totalPrice: 0, quantity: 0, priceAtPurchase: 0 });
+        setCart(initialCart);
       }
     };
-
     loadCart();
   }, [userData]);
 
-  // ✅ Memoizar total del carrito
-  const totalPrice = useMemo(() => calculateTotalPrice(cart.products), [cart]);
+  const totalPrice = useMemo(() => cart.items.reduce((acc, item) => acc + item.product.price * item.quantity, 0), [cart.items]);
 
-  // ✅ Agregar producto al carrito
-const addToCart = useCallback(async (product: IProduct) => {
-  if (!userData || !userData.user?.id) return; //  Asegura que userData no sea null
-
-  const updatedCart = addToCartHelper(cart, product, 1);
-  setCart(updatedCart);
-  await saveCartToDB(updatedCart.products, userData.token);
-}, [cart, userData]);
-
-  // ✅ Remover producto del carrito
-const removeFromCart = useCallback(async (productId: string) => {
-  if (!userData || !userData.user?.id) return; //  Asegura que userData no sea null
-
-  const updatedCart = removeFromCartHelper(cart, productId);
-  setCart(updatedCart);
-  await saveCartToDB(updatedCart.products, userData.token);
-}, [cart, userData]);
-
-  // ✅ Vaciar el carrito
-  const clearCart = useCallback(async () => {
-  if (!userData || !userData.user?.id) return; // Asegura que userData no sea null
-    const emptyCart = clearCartHelper();
-    setCart(emptyCart);
-    await saveCartToDB(emptyCart.products, userData.token);
+  const addToCart = useCallback(async (product: IProduct) => {
+    if (!userData) return;
+    setCart(prevCart => addToCartHelper(prevCart, product, 1));
   }, [userData]);
 
-  // ✅ Actualizar cantidad de productos
-  const updateCartQuantity = useCallback(async (id: string, quantity: number) => {
-    
-  if (!userData || !userData.user?.id) return; // ✅ Asegura que userData no sea null
-    const updatedCart = updateCartQuantityHelper(cart, id, quantity);
-    setCart(updatedCart);
-    await saveCartToDB(updatedCart.products, userData.token);
-  }, [cart, userData]);
+  const updateCartQuantity = useCallback(async (itemId: string, quantity: number) => {
+    if (!userData) return;
+
+    const updatedItem = await updateCartItemQuantity(itemId, quantity, userData.token);
+    if (!updatedItem) return;
+
+    setCart(prevCart => {
+      const updatedItems = prevCart.items.map(item =>
+        item.id === itemId ? { ...item, quantity: updatedItem.quantity } : item
+      );
+      return { ...prevCart, items: updatedItems, totalPrice: totalPrice };
+    });
+  }, [userData]);
+
+  const removeFromCart = useCallback(async (itemId: string) => {
+    if (!userData) return;
+
+    const success = await deleteCartItem(itemId, userData.token);
+    if (!success) return;
+
+    setCart(prevCart => {
+      const updatedItems = prevCart.items.filter(item => item.id !== itemId);
+      return { ...prevCart, items: updatedItems, totalPrice: totalPrice };
+    });
+  }, [userData]);
+
+  const clearCart = useCallback(async () => {
+    if (!userData) return;
+
+    const success = await clearCartDB(userData.token);
+    if (!success) return;
+
+    setCart(prevCart => ({
+      ...prevCart,
+      items: [],
+      totalPrice: 0,
+    }));
+  }, [userData]);
 
   return (
     <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, updateCartQuantity, totalPrice }}>

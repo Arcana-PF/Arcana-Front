@@ -17,9 +17,11 @@ export interface IProduct {
     onAddToFavorites?: () => void;
 }
 
-export interface ICategory{
-    id: number;
-    name: string;
+export interface ICategory {
+  id: string
+  name: string
+  isActive: boolean
+  products: string[]
 }
 export interface IloginProps{
     email: string;
@@ -65,10 +67,27 @@ export interface IOrder {
     products: IProduct[];
 }
 
+export interface ICartItem {
+  id: string
+  cart: string
+  product: IProduct
+  quantity: number
+}
+
+export interface ICartUser {
+  id: string
+  name: string
+  email: string
+  phone: string
+  address: string
+  isAdmin: boolean
+  isActive: boolean
+}
+
 export interface ICart {
-    id: string;
-    quantity: number;
-    priceAtPurchase: number;
-    products: IProduct[];
-    totalPrice: number;
+  id: string
+  user: ICartUser
+  items: ICartItem[]
+  totalPrice: number
+  isActive: boolean
 }

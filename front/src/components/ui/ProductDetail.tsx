@@ -1,25 +1,37 @@
 "use client";
 
+import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { IProduct } from "@/types";
-import { useCart } from "@/context/CartContext"; // ✅ Usa el contexto del carrito
+import { useCart } from "@/context/CartContext";
 import { Heart, ShoppingCart, Star } from "lucide-react";
-import React, { useState } from "react";
 import Swal from "sweetalert2";
 
 const ProductDetail: React.FC<IProduct> = ({
-  id, name, imgUrl, description, stock, price, categories, rating = 4.5, onAddToFavorites,
+  id,
+  name,
+  imgUrl,
+  description,
+  stock,
+  price,
+  categories,
+  rating = 4.5,
+  onAddToFavorites,
 }) => {
   const { userData } = useAuth();
-  const { addToCart } = useCart(); // ✅ Obtiene la función de agregar productos
+  const { addToCart } = useCart(); // Obtiene la función del contexto para agregar producto
   const [quantity, setQuantity] = useState(1);
 
+  // Se extrae la primera categoría o se asigna "Sin categoría"
   const category = categories.length > 0 ? categories[0].name : "Sin categoría";
 
+  // Lógica del input para limitar entre 1 y stock máximo
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuantity(Math.max(1, Math.min(stock, parseInt(e.target.value, 10) || 1)));
+    const newQuantity = parseInt(e.target.value, 10) || 1;
+    setQuantity(Math.max(1, Math.min(stock, newQuantity)));
   };
 
+  // Función para agregar producto al carrito
   const handleAddToCart = () => {
     if (!userData?.token) {
       Swal.fire({
@@ -30,8 +42,21 @@ const ProductDetail: React.FC<IProduct> = ({
       return;
     }
 
-    addToCart({ id, name, imgUrl, description, stock, price, isActive: true, categories, quantity });
+    // Se llama a la función del contexto; se inyecta la cantidad deseada 
+    // (nota: quantity se agrega en el objeto para que el helper o la lógica en el contexto la pueda usar).
+    addToCart({
+      id,
+      name,
+      imgUrl,
+      description,
+      stock,
+      price,
+      isActive: true,
+      categories,
+      quantity, // opcional en IProduct, pero sirve para indicar cuántas unidades agregar
+    });
 
+    // Se muestra una alerta de éxito y, si el usuario lo confirma, se redirige al carrito
     Swal.fire({
       icon: "success",
       title: "¡Producto agregado!",
@@ -92,7 +117,7 @@ const ProductDetail: React.FC<IProduct> = ({
             </p>
           </div>
 
-          {/* Selector de cantidad con validación */}
+          {/* Selector de cantidad y botón para agregar al carrito */}
           {!userData?.user.isAdmin && (
             <div className="flex items-center gap-6">
               <input
