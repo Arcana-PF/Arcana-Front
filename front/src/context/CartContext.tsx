@@ -63,10 +63,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const updateCartQuantity = useCallback(async (itemId: string, quantity: number) => {
     if (!userData) return;
-
     const updatedItem = await updateCartItemQuantity(itemId, quantity, userData.token);
     if (!updatedItem) return;
-
     setCart(prevCart => {
       const updatedItems = prevCart.items.map(item =>
         item.id === itemId ? { ...item, quantity: updatedItem.quantity } : item
@@ -77,10 +75,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const removeFromCart = useCallback(async (itemId: string) => {
     if (!userData) return;
-
     const success = await deleteCartItem(itemId, userData.token);
     if (!success) return;
-
     setCart(prevCart => {
       const updatedItems = prevCart.items.filter(item => item.id !== itemId);
       return { ...prevCart, items: updatedItems, totalPrice: totalPrice };
@@ -89,10 +85,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const clearCart = useCallback(async () => {
     if (!userData) return;
-
     const success = await clearCartDB(userData.token);
     if (!success) return;
-
     setCart(prevCart => ({
       ...prevCart,
       items: [],

@@ -20,7 +20,7 @@ export const addToCartHelper = (cart: ICart, product: IProduct, quantity: number
     id: crypto.randomUUID(),
     cart: cart.id,
     product,
-    quantity: Math.max(1, quantity),
+    quantity: Math.max(1, quantity)
   };
   const newItems = [...cart.items, newItem];
   return { ...cart, items: newItems, totalPrice: calculateTotalPrice(newItems) };
@@ -40,7 +40,7 @@ export async function updateCartItemQuantity(itemId: string, quantity: number, t
 
     if (!response.ok) throw new Error("Error actualizando cantidad");
 
-    return await response.json(); // Devuelve solo el ítem actualizado
+    return await response.json(); // Devuelve el ítem actualizado
   } catch (error) {
     console.error("Error al actualizar cantidad:", error);
     return null;
@@ -50,7 +50,7 @@ export async function updateCartItemQuantity(itemId: string, quantity: number, t
 /** Elimina un producto del carrito mediante DELETE */
 export async function deleteCartItem(itemId: string, token: string): Promise<boolean> {
   try {
-    const response = await fetch(`${APIURL}/cart/items/${itemId}`, {
+    const response = await fetch(`${APIURL}/cart/item/${itemId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -66,7 +66,7 @@ export async function deleteCartItem(itemId: string, token: string): Promise<boo
   }
 }
 
-/** Vacía el carrito */
+/** Vacía el carrito mediante DELETE /cart */
 export async function clearCartDB(token: string): Promise<boolean> {
   try {
     const response = await fetch(`${APIURL}/cart`, {
@@ -89,21 +89,27 @@ export async function clearCartDB(token: string): Promise<boolean> {
 export const calculateTotalPrice = (items: ICartItem[]): number =>
   items.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
 
-/** Guarda el carrito en la base de datos */
+/** Guarda el carrito en la base de datos, incluyendo la información del usuario (ICartUser) */
 export async function saveCartToDB(cart: ICart, token: string) {
+  // Validamos que el usuario esté activo antes de guardar el carrito.
+  if (!cart.user.isActive) {
+    console.warn("El usuario no está activo. No se guardará el carrito.");
+    return { success: false, error: "Usuario inactivo" };
+  }
+  
   try {
-    const response = await fetch(`${APIURL}/cart/items`, {
+    const response = await fetch(`${APIURL}/cart`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        // Se envía la lista de items: cada uno con productId y quantity
+        user: cart.user, // Se envía la información del usuario según ICartUser
         items: cart.items.map(item => ({
           productId: item.product.id,
           quantity: item.quantity,
-        }))
+        })),
       }),
     });
 
@@ -112,6 +118,7 @@ export async function saveCartToDB(cart: ICart, token: string) {
       console.error("Error al guardar carrito:", errorMessage);
       return { success: false, error: errorMessage };
     }
+
     return { success: true };
   } catch (error) {
     console.error("Error inesperado:", error);
@@ -119,7 +126,7 @@ export async function saveCartToDB(cart: ICart, token: string) {
   }
 }
 
-/** Obtiene el carrito desde la base de datos */
+/** Obtiene el carrito desde la base de datos y adapta su estructura, incluyendo ICartUser */
 export async function fetchCartFromDB(token: string): Promise<ICart> {
   try {
     const response = await fetch(`${APIURL}/cart`, {
@@ -130,25 +137,27 @@ export async function fetchCartFromDB(token: string): Promise<ICart> {
     if (!response.ok) throw new Error("Error al obtener el carrito");
 
     const data = await response.json();
-    // Se asume que la API devuelve { id, user, items, totalPrice, isActive }
-    return Array.isArray(data.items)
-      ? {
+    // Se asegura que la propiedad user cumpla con ICartUser
+    if (Array.isArray(data.items)) {
+      return {
         id: data.id,
-        user: data.user, // Se espera que data.user cumpla con ICartUser
+        user: data.user as ICartUser,
         items: (data.items as ICartItem[]).map((item: ICartItem) => ({
           ...item,
           product: item.product ?? {},
         })),
         totalPrice: calculateTotalPrice(data.items as ICartItem[]),
         isActive: data.isActive,
-      }
-      : {
+      };
+    } else {
+      return {
         id: "cart",
         user: { id: "", name: "", email: "", phone: "", address: "", isAdmin: false, isActive: false },
         items: [],
         totalPrice: 0,
         isActive: true,
       };
+    }
   } catch (error) {
     console.error("Error al recuperar carrito:", error);
     return {
