@@ -48,6 +48,7 @@ export interface IRegisterErrors{
 }
 
 export interface IUserSession {
+    validationToken: string;
     token: string;
     user: {
         address: string;
@@ -57,7 +58,9 @@ export interface IUserSession {
         phone: string;
         orders: IOrder[];
         isAdmin: boolean;
+        
     };
+    
 }
 
 export interface IOrder {

@@ -28,13 +28,15 @@ const Card: React.FC<ICardProps> = ({
 }) => {
   const { userData } = useAuth();
   const router = useRouter();
-
-  // Se extrae la primera categoría, o se asigna "Sin categoría" si no hay
-  const category = categories.length > 0 ? categories[0].name : "Sin categoría";
+  
+  // Muestra hasta 3 categorías
+  const displayedCategories = categories.slice(0, 3);
+  // También extrae la primera categoría como fallback
+  const primaryCategory = categories.length > 0 ? categories[0].name : "Sin categoría";
 
   // Navega al detalle del producto si el click no proviene de un botón
   const handleCardClick = (e: React.MouseEvent) => {
-    if (!(e.target as HTMLElement).closest('button')) {
+    if (!(e.target as HTMLElement).closest('button') && !onClick) {
       router.push(`/product/${id}`);
     }
   };
@@ -117,17 +119,25 @@ const Card: React.FC<ICardProps> = ({
       <div className="relative h-56 w-full overflow-hidden bg-gray-100">
         <img
           src={imgUrl}
-          alt={`${name} - ${category}`}
+          alt={`${name} - ${displayedCategories.map(cat => cat.name).join(', ') || "Sin categoría"}`}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-
-        {/* Badge de categoría */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
-          <span className="px-2 py-1 bg-purple-600 text-white text-xs font-medium rounded-full">
-            {category}
-          </span>
-        </div>
+        
+        {/* Badges de múltiples categorías */}
+        {categories.length > 0 && (
+          <div className="absolute top-2 left-2 flex gap-1 flex-wrap max-w-full">
+            {displayedCategories.map((cat) => (
+              <span
+                key={cat.name}
+                className="bg-purple-700/80 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm truncate max-w-[80px]"
+                title={cat.name}
+              >
+                {cat.name}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Panel de rating */}
         {rating && (

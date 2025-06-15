@@ -10,36 +10,27 @@ import React from "react"
 import Link from "next/link"
 import Swal from "sweetalert2"
 
-
-
-
 const LoginComponent = () => {
   const router = useRouter()
-  const { setUserData } = useAuth()
+  const { setUserData, userData } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
-  const { userData } = useAuth();
-  
 
-    useEffect(() => {
+  useEffect(() => {
     if (userData) {
-      router.push("/"); // Redirige al home si ya está logueado
+      router.push("/") // Redirige al home si ya está logueado
     }
-  }, [userData, router]);
-
+  }, [userData, router])
 
   return (
     <div className="mt-25 fixed inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-black overflow-auto">
-      {/* Efectos de fondo decorativos */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute top-3/4 left-3/4 w-32 h-32 bg-yellow-400/5 rounded-full blur-2xl animate-pulse delay-500"></div>
       </div>
 
-      {/* Contenedor del formulario */}
       <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
         <div className="bg-black/80 backdrop-blur-sm rounded-2xl shadow-2xl p-8 w-full max-w-md border border-yellow-500/30 hover:border-yellow-500/50 transition-all duration-300">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-4">
               <Sparkles className="w-8 h-8 text-yellow-500 mr-2 animate-pulse" />
@@ -50,77 +41,69 @@ const LoginComponent = () => {
           </div>
 
           <Formik
-            initialValues={{ email: "", password: "" }}
-            validate={validateLoginForm}
-onSubmit={async (values, { setSubmitting }) => {
-  try {
-    // Mostrar loading con SweetAlert2
-    Swal.fire({
-      title: "Invocando acceso...",
-      text: "Conectando con el plano arcano",
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      showConfirmButton: false,
-      background: "#0e0a1f",
-      color: "#e5e7eb",
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
+        initialValues={{ email: "", password: "" }}
+        validate={validateLoginForm}
+        onSubmit={async (values, { setSubmitting }) => {
+          try {
+            Swal.fire({
+              title: "Invocando acceso...",
+              text: "Conectando con el plano arcano",
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              showConfirmButton: false,
+              background: "#0e0a1f",
+              color: "#e5e7eb",
+              didOpen: () => {
+                Swal.showLoading()
+              },
+            })
 
-    // Llamada al backend
-    const response = await login(values);
+            const response = await login(values);
+            const { validationToken, user } = response;
 
-    // Extraer token y usuario de la respuesta
-    const { validationToken, user } = response;
+            if (!user) {
+              throw new Error("No se encontró información del usuario.");
+            }
 
-    // Verificar si user está definido
-    if (!user) {
-      throw new Error("No se encontró información del usuario en la respuesta.");
-    }
+            setUserData({
+              validationToken,    // Token del backend
+              token: validationToken,  // Para compatibilidad
+              user               // Datos del usuario
+            });
+            
+            Swal.close()
 
-    // Guardar datos en el contexto de autenticación
-    setUserData({ token: validationToken, user });
-    
-    // Cerrar la alerta de carga
-    Swal.close();
+            await Swal.fire({
+              icon: "success",
+              title: `¡Bienvenido de vuelta, ${user.name}!`,
+              text: "Has accedido exitosamente al Círculo Arcano.",
+              confirmButtonText: "Continuar",
+              confirmButtonColor: "#facc15",
+              background: "#0e0a1f",
+              color: "#e5e7eb",
+              timer: 3000,
+              timerProgressBar: true,
+            })
 
-    // Mostrar mensaje de éxito
-    await Swal.fire({
-      icon: "success",
-      title: `¡Bienvenido de vuelta, ${user.name}!`,
-      text: "Has accedido exitosamente al Círculo Arcano.",
-      confirmButtonText: "Continuar",
-      confirmButtonColor: "#facc15",
-      background: "#0e0a1f",
-      color: "#e5e7eb",
-      timer: 3000,
-      timerProgressBar: true,
-    });
-
-    // Redirigir al usuario
-    router.push("/");
-  } catch (error: unknown) {
-  Swal.close();
-  console.error("Error al iniciar sesión:", error);
-
-  // Asegúrate de que sea un error de tipo Error
-  const message = error instanceof Error ? error.message : "Ocurrió un problema desconocido.";
-
-  await Swal.fire({
-    icon: "error",
-    title: "Error al iniciar sesión",
-    text: message,
-    confirmButtonText: "Intentar de nuevo",
-    confirmButtonColor: "#7c3aed",
-    background: "#0e0a1f",
-    color: "#e5e7eb",
-  });
-  } finally {
-    setSubmitting(false);
-  }
-}}
-          >
+            router.push("/")
+          } catch (error: unknown) {
+            Swal.close()
+            console.error("Error al iniciar sesión:", error);
+            const message = error instanceof Error ? error.message : "Ocurrió un problema desconocido."
+            await Swal.fire({
+              icon: "error",
+              title: "Error al iniciar sesión",
+              text: message,
+              confirmButtonText: "Intentar de nuevo",
+              confirmButtonColor: "#7c3aed",
+              background: "#0e0a1f",
+              color: "#e5e7eb",
+            })
+          } finally {
+            setSubmitting(false)
+          }
+        }}
+      >
             {({ isSubmitting, errors, touched }) => (
               <Form className="space-y-6">
                 {/* Email */}
@@ -133,6 +116,7 @@ onSubmit={async (values, { setSubmitting }) => {
                     <Field
                       type="email"
                       name="email"
+                      autoComplete="email"
                       placeholder="tuemail@circulo.arcano"
                       className={`w-full p-4 pl-12 border rounded-xl bg-gray-900/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 backdrop-blur-sm ${
                         errors.email && touched.email
@@ -155,6 +139,7 @@ onSubmit={async (values, { setSubmitting }) => {
                     <Field
                       type={showPassword ? "text" : "password"}
                       name="password"
+                      autoComplete="current-password"
                       placeholder="Tu palabra de poder"
                       className={`w-full p-4 pl-12 pr-12 border rounded-xl bg-gray-900/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 backdrop-blur-sm ${
                         errors.password && touched.password
@@ -175,7 +160,7 @@ onSubmit={async (values, { setSubmitting }) => {
                   <ErrorMessage name="password" component="div" className="text-red-400 mt-2 text-sm" />
                 </div>
 
-                {/* Botón de envío */}
+                {/* Submit Button */}
                 <div className="pt-4">
                   <button
                     type="submit"
@@ -201,12 +186,10 @@ onSubmit={async (values, { setSubmitting }) => {
                   </button>
                 </div>
 
-                {/* Texto adicional */}
                 <p className="text-center text-gray-400 text-sm mt-6">
                   Al ingresar, accederás a los secretos del círculo arcano
                 </p>
 
-                {/* Enlaces de navegación */}
                 <div className="text-center mt-6 pt-4 border-t border-yellow-500/20">
                   <p className="text-gray-400 text-sm mb-3">¿No tienes una cuenta?</p>
                   <Link

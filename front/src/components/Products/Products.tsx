@@ -53,7 +53,7 @@ const Products = () => {
         {/* Categorías */}
         <div className="flex overflow-x-auto pb-4 mb-8 scrollbar-hide">
           <div className="flex space-x-2">
-            {["Todos", "Amuletos", "Tarot", "Cristales", "Inciensos", "Sahumerios","Estatuillas", "Libros", "Velas"].map((cat) => (
+            {["Todos", "Amuletos", "Tarot", "Cristales", "Inciensos", "Sahumerios","Estatuillas", "Libros", "Velas", "Specials","Quemantes"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => {

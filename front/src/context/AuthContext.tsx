@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (userData) {
       const normalizedData = {
         ...userData,
-        isAdmin: Boolean(userData?.user?.isAdmin), // ← Asegurar que siempre sea booleano
+        isAdmin: Boolean(userData?.user?.isAdmin),
       };
 
       localStorage.setItem('userSession', JSON.stringify(normalizedData));
@@ -57,7 +57,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
       });
-
     } else {
       localStorage.removeItem('userSession');
       Cookies.remove('userSession');
