@@ -1,9 +1,10 @@
-import CartView from "@/components/Cart/CartComponent";
+import CartComponent from "@/components/Cart/CartComponent";
+
 
 export default function CartPage() {
   return (
     <main className="min-h-screen">
-      <CartView />
+      <CartComponent />
     </main>
   );
 }

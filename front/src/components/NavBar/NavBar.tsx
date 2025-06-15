@@ -35,7 +35,6 @@ export default function Navbar() {
     { name: "Libros", label: "Libros Místicos" },
     { name: "Estatuillas", label: "Estatuillas" },
   ]
-
   // Cargar los productos desde el helper al montar el componente
   useEffect(() => {
     async function fetchProducts() {

@@ -4,6 +4,9 @@ import React from "react";
 import { useCart } from "@/context/CartContext";
 import Swal from "sweetalert2";
 
+
+const APIURL = process.env.NEXT_PUBLIC_API_URL;
+
 const CheckoutComponent = () => {
   const { cart, totalPrice } = useCart();
 
@@ -23,21 +26,31 @@ const CheckoutComponent = () => {
 
       if (!confirmPayment.isConfirmed) return; // ✅ Si cancela, no procede con el pago
 
-      // ✅ Crear la transacción en el backend
-      const response = await fetch("/api/paypal/create-payment", {
+      // ✅ Crear la transacción en el backend con `orderId` y `localOrderId`
+      const response = await fetch("${APIURL}/paypal/create-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cart }),
+        body: JSON.stringify({
+          order: {
+            localOrderId: cart.id, // Usamos el ID del carrito como referencia local
+            user: cart.user, // Información del comprador
+            totalPrice,
+            items: cart.items.map((item) => ({
+              productId: item.product.id,
+              quantity: item.quantity,
+            })),
+          },
+        }),
       });
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Error en PayPal");
 
-      // ✅ Alerta de información antes de redirigir
+      // ✅ Alerta de éxito y obtención del `orderId` del backend
       Swal.fire({
-        title: "Redirigiendo a PayPal...",
-        text: "Serás enviado a la pasarela de pago.",
-        icon: "info",
+        title: "Pago confirmado",
+        text: `Tu orden ha sido registrada con ID ${data.orderId}. Serás enviado a la pasarela de pago.`,
+        icon: "success",
         timer: 2000,
         showConfirmButton: false,
       });
