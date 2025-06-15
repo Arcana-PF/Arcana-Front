@@ -34,37 +34,41 @@ const ProductForm = () => {
   const [errors, setErrors] = useState<string[]>([])
   const [categories, setCategories] = useState<Category[]>([])
 
-  const token = Cookies.get("userSession") || ""
+// 🔥 FIX: Parsear correctamente la cookie
+const userSession = Cookies.get("userSession")
+const token = userSession ? JSON.parse(userSession).token : ""
 
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const res = await fetch("https://arcana-back.onrender.com/categories", {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        })
+useEffect(() => {
+  const loadCategories = async () => {
+    try {
+      const res = await fetch("https://arcana-back.onrender.com/categories", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
 
-        if (!res.ok) throw new Error("No se pudieron cargar las categorías")
-
-        const data: unknown = await res.json()
-        
-        if (!Array.isArray(data)) throw new Error("La respuesta no es un array")
-        
-        // Type guard for Category array
-        const loadedCategories = data.filter((item): item is Category => 
-          typeof item.id === "string" && 
-          typeof item.name === "string" && 
-          typeof item.isActive === "boolean"
-        )
-
-        setCategories(loadedCategories)
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : "Error desconocido"
-        setMessage(`Error cargando categorías: ${errorMessage}`)
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(`Status ${res.status}: ${text}`)
       }
-    }
 
-    loadCategories()
-  }, [token])
+      const data: unknown = await res.json()
+
+      if (!Array.isArray(data)) throw new Error("La respuesta no es un array")
+
+      const loadedCategories = data.filter((item): item is Category =>
+        typeof item.id === "string" &&
+        typeof item.name === "string" &&
+        typeof item.isActive === "boolean"
+      )
+
+      setCategories(loadedCategories)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Error desconocido"
+      setMessage(`Error cargando categorías: ${errorMessage}`)
+    }
+  }
+
+  loadCategories()
+}, [token])
 
   const formik = useFormik<ProductFormValues>({
     initialValues: {
