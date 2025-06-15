@@ -4,6 +4,7 @@ import PerfilAdmin from '@/components/ProfileAdmin/ProfileAdmincomponent';
 import ProductForm from '@/components/Adminproduct/AdminProduct';
 import AdminRoleAssigner from '@/components/Adminproduct/AdminRoles';
 
+
 const ProfileAdmin = () => {
   const [activeSection, setActiveSection] = useState<'products' | 'users'>('products');
 
