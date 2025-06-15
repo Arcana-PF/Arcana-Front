@@ -9,6 +9,7 @@ import { Eye, EyeOff, Mail, Lock, Sparkles, UserPlus } from "lucide-react"
 import React from "react"
 import Link from "next/link"
 import Swal from "sweetalert2"
+import Cookies from "js-cookie"
 
 const LoginComponent = () => {
   const router = useRouter()
@@ -71,6 +72,22 @@ const LoginComponent = () => {
               user               // Datos del usuario
             });
             
+            const sessionData = {
+  validationToken,
+  token: validationToken,
+  user
+}
+
+setUserData(sessionData);
+
+// Guarda tanto en localStorage como en cookies con el mismo formato
+localStorage.setItem('userSession', JSON.stringify(sessionData));
+Cookies.set('userSession', JSON.stringify(sessionData), {
+  path: '/',
+  sameSite: 'lax',
+  secure: process.env.NODE_ENV === 'production',
+});
+
             Swal.close()
 
             await Swal.fire({
