@@ -119,7 +119,7 @@ const Card: React.FC<ICardProps> = ({
       <div className="relative h-56 w-full overflow-hidden bg-gray-100">
         <img
           src={imgUrl}
-          alt={`${name} - ${displayedCategories.map(cat => cat.name).join(', ') || "Sin categoría"}`}
+          alt={`${name} - ${primaryCategory}`}  
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
