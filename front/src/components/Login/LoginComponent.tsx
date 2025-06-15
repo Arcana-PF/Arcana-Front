@@ -58,13 +58,17 @@ const LoginComponent = () => {
                   },
                 })
 
-                const response = await login(values)
-                const { validationToken, user } = response
+                const response = await login(values);
+                const { validationToken, user } = response;
 
-                if (!user) throw new Error("No se encontró información del usuario en la respuesta.")
+                if (!user) throw new Error("No se encontró información del usuario.");
 
-                // Guardar con la propiedad correcta (validationToken, no token)
-                setUserData({ validationToken, user })
+                
+                setUserData({
+                  validationToken,    // Usa el token del backend
+                  token: validationToken,  // Duplica el valor para cumplir con la interfaz
+                  user               // Datos del usuario
+                });
                 Swal.close()
 
                 await Swal.fire({

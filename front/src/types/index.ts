@@ -46,7 +46,7 @@ export interface IRegisterErrors{
 }
 
 export interface IUserSession {
-    validationToken:string;
+    validationToken: string;
     token: string;
     user: {
         address: string;

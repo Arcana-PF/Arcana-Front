@@ -5,52 +5,76 @@ import { useFormik } from "formik"
 import Cookies from "js-cookie"
 import { Sparkles } from "lucide-react"
 
-type Category = {
+interface Category {
   id: string
   name: string
   isActive: boolean
 }
 
+interface ProductFormValues {
+  name: string
+  description: string
+  price: string
+  stock: string
+  img: File | null
+  selectedCategories: string[]
+  newCategories: string
+}
+
+interface ApiResponse {
+  id?: string
+  product?: {
+    id: string
+  }
+}
+
 const ProductForm = () => {
-  const [uploading, setUploading] = useState(false)
-  const [message, setMessage] = useState("")
+  const [uploading, setUploading] = useState<boolean>(false)
+  const [message, setMessage] = useState<string>("")
   const [errors, setErrors] = useState<string[]>([])
- const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([])
 
-  const [useExistingCategory, setUseExistingCategory] = useState(true)
-
-  const token = Cookies.get("userSession")
+  const token = Cookies.get("userSession") || ""
 
   useEffect(() => {
-  if (!useExistingCategory) return;
+    const loadCategories = async () => {
+      try {
+        const res = await fetch("https://arcana-back.onrender.com/categories", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
 
-  const loadCats = async () => {
-    try {
-      const res = await fetch("https://arcana-back.onrender.com/categories", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
-      console.log("GET /categories", res.status);
-      const data = await res.json();
-      console.log("GET /categories data:", data);
-      if (!Array.isArray(data)) throw new Error("No es un array");
-      setCategories(data);
-    } catch (err: any) {
-      console.error("Error al cargar categorías:", err);
-      setMessage("No se pudieron cargar categorías: " + err.message);
+        if (!res.ok) throw new Error("No se pudieron cargar las categorías")
+
+        const data: unknown = await res.json()
+        
+        if (!Array.isArray(data)) throw new Error("La respuesta no es un array")
+        
+        // Type guard for Category array
+        const loadedCategories = data.filter((item): item is Category => 
+          typeof item.id === "string" && 
+          typeof item.name === "string" && 
+          typeof item.isActive === "boolean"
+        )
+
+        setCategories(loadedCategories)
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Error desconocido"
+        setMessage(`Error cargando categorías: ${errorMessage}`)
+      }
     }
-  }
-  loadCats();
-}, [useExistingCategory, token]);
 
-  const formik = useFormik({
+    loadCategories()
+  }, [token])
+
+  const formik = useFormik<ProductFormValues>({
     initialValues: {
       name: "",
       description: "",
       price: "",
       stock: "",
-      img: null as File | null,
-      categoryNames: "",
-      newCategory: "",
+      img: null,
+      selectedCategories: [],
+      newCategories: "",
     },
     onSubmit: async (values) => {
       const newErrors: string[] = []
@@ -59,9 +83,10 @@ const ProductForm = () => {
       if (!values.description) newErrors.push("La descripción es requerida.")
       if (!values.price || isNaN(Number(values.price))) newErrors.push("El precio debe ser un número.")
       if (!values.stock || isNaN(Number(values.stock))) newErrors.push("El stock debe ser un número.")
-      if (!useExistingCategory && !values.newCategory) newErrors.push("Debes ingresar un nombre de categoría nueva.")
-      if (useExistingCategory && !values.categoryNames) newErrors.push("Debes seleccionar una categoría existente.")
       if (!values.img) newErrors.push("La imagen es requerida.")
+      if (values.selectedCategories.length === 0 && values.newCategories.trim() === "") {
+        newErrors.push("Debes seleccionar o crear al menos una categoría.")
+      }
 
       if (newErrors.length > 0) {
         setErrors(newErrors)
@@ -73,27 +98,37 @@ const ProductForm = () => {
         setUploading(true)
         setMessage("Creando producto...")
 
-        let finalCategory = values.categoryNames
+        // Process categories
+        const finalCategoryNames = [...values.selectedCategories]
+        const newCatNames = values.newCategories
+          .split(",")
+          .map((cat) => cat.trim())
+          .filter((cat) => cat !== "")
 
-        // Si crea una categoría nueva, la enviamos primero
-        if (!useExistingCategory) {
-          const catRes = await fetch("https://arcana-back.onrender.com/categories", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ name: values.newCategory }),
-          })
+        // Create new categories if they don't exist
+        for (const catName of newCatNames) {
+          const alreadyExists = categories.some(
+            (cat) => cat.name.toLowerCase() === catName.toLowerCase()
+          )
+          
+          if (!alreadyExists) {
+            const catRes = await fetch("https://arcana-back.onrender.com/categories", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ name: catName }),
+            })
 
-          if (!catRes.ok) {
-            throw new Error("Error al crear nueva categoría")
+            if (!catRes.ok) {
+              throw new Error(`Error al crear la categoría "${catName}"`)
+            }
           }
-
-          finalCategory = values.newCategory
+          finalCategoryNames.push(catName)
         }
 
-        // Crear producto sin imagen
+        // Create product
         const productRes = await fetch("https://arcana-back.onrender.com/products", {
           method: "POST",
           headers: {
@@ -106,46 +141,51 @@ const ProductForm = () => {
             price: Number(values.price),
             stock: Number(values.stock),
             imgUrl: "",
-            categoryNames: [finalCategory],
+            categoryNames: finalCategoryNames,
           }),
         })
 
         if (!productRes.ok) {
           const errorText = await productRes.text()
-          throw new Error("Error al crear producto: " + errorText)
+          throw new Error(`Error al crear producto: ${errorText}`)
         }
 
-        const createdProduct = await productRes.json()
-        const productId = createdProduct?.id || createdProduct?.product?.id
+        const productData: ApiResponse = await productRes.json()
+        const productId = productData.id || productData.product?.id
 
         if (!productId) throw new Error("No se recibió el ID del producto creado")
 
+        // Upload image
         // Subir imagen
-        setMessage("Subiendo imagen...")
+          setMessage("Subiendo imagen...")
 
-        const formData = new FormData()
-        formData.append("file", values.img!)
+          if (!values.img) {
+            throw new Error("No se seleccionó ninguna imagen")
+          }
 
-        const uploadRes = await fetch(`https://arcana-back.onrender.com/files/uploadImage/${productId}`, {
-          method: "POST",
-          body: formData,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+          const formData = new FormData()
+          formData.append("file", values.img) // Now safe
+
+          const uploadRes = await fetch(
+            `https://arcana-back.onrender.com/files/uploadImage/${productId}`,
+            {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` },
+              body: formData,
+            }
+          )
 
         if (!uploadRes.ok) {
           const errorText = await uploadRes.text()
-          throw new Error("Error al subir imagen: " + errorText)
+          throw new Error(`Error al subir imagen: ${errorText}`)
         }
 
-        setMessage("Producto creado con imagen 🎉")
+        setMessage("✅ Producto creado con éxito.")
         formik.resetForm()
-        // Recargar categorías por si se agregó una nueva
-        setUseExistingCategory(true)
-      } catch (err) {
-        console.error(err)
-        setMessage("Hubo un error: " + (err instanceof Error ? err.message : "Error desconocido"))
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Error desconocido"
+        console.error(errorMessage)
+        setMessage(`Error: ${errorMessage}`)
       } finally {
         setUploading(false)
       }
@@ -168,11 +208,13 @@ const ProductForm = () => {
       )}
 
       {message && (
-        <p className="mb-4 text-sm text-yellow-400 border border-yellow-500/10 rounded p-2">{message}</p>
+        <p className="mb-4 text-sm text-yellow-400 border border-yellow-500/10 rounded p-2">
+          {message}
+        </p>
       )}
 
       <form onSubmit={formik.handleSubmit} className="space-y-4">
-        {/* Nombre */}
+        {/* Name field */}
         <div>
           <label className="block text-yellow-500 text-sm mb-1">Nombre</label>
           <input
@@ -184,7 +226,7 @@ const ProductForm = () => {
           />
         </div>
 
-        {/* Descripción */}
+        {/* Description field */}
         <div>
           <label className="block text-yellow-500 text-sm mb-1">Descripción</label>
           <textarea
@@ -195,7 +237,7 @@ const ProductForm = () => {
           />
         </div>
 
-        {/* Precio y Stock */}
+        {/* Price and Stock */}
         <div className="flex gap-4">
           <div className="w-1/2">
             <label className="block text-yellow-500 text-sm mb-1">Precio</label>
@@ -219,65 +261,62 @@ const ProductForm = () => {
           </div>
         </div>
 
-        {/* Switch Categoría */}
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={useExistingCategory}
-            onChange={() => setUseExistingCategory(!useExistingCategory)}
-            className="accent-yellow-500"
-          />
-          <label className="text-sm">Usar categoría existente</label>
+        {/* Existing categories */}
+        <div>
+          <label className="block text-yellow-500 text-sm mb-2">Categorías existentes</label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {categories.map((cat) => (
+              <label key={cat.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  value={cat.name}
+                  checked={formik.values.selectedCategories.includes(cat.name)}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    const selected = formik.values.selectedCategories.includes(value)
+                      ? formik.values.selectedCategories.filter((c) => c !== value)
+                      : [...formik.values.selectedCategories, value]
+                    formik.setFieldValue("selectedCategories", selected)
+                  }}
+                  className="accent-yellow-500"
+                />
+                {cat.name}
+              </label>
+            ))}
+          </div>
         </div>
 
-        {/* Selector o Input de categoría */}
-        {useExistingCategory ? (
-          <div>
-            <label className="block text-yellow-500 text-sm mb-1">Seleccionar categoría</label>
-            <select
-              name="categoryNames"
-              onChange={formik.handleChange}
-              value={formik.values.categoryNames}
-              className="w-full p-2 bg-gray-800 border border-yellow-500/20 rounded"
-            >
-              <option value="">Seleccionar</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.name}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        ) : (
-          <div>
-            <label className="block text-yellow-500 text-sm mb-1">Nueva categoría</label>
-            <input
-              type="text"
-              name="newCategory"
-              onChange={formik.handleChange}
-              value={formik.values.newCategory}
-              className="w-full p-2 bg-gray-800 border border-yellow-500/20 rounded"
-            />
-          </div>
-        )}
+        {/* New categories */}
+        <div>
+          <label className="block text-yellow-500 text-sm mb-1">
+            Nuevas categorías (separadas por coma)
+          </label>
+          <input
+            type="text"
+            name="newCategories"
+            onChange={formik.handleChange}
+            value={formik.values.newCategories}
+            className="w-full p-2 bg-gray-800 border border-yellow-500/20 rounded"
+            placeholder="Ej: Tarot, Cristales, Energía"
+          />
+        </div>
 
-        {/* Imagen */}
+        {/* Image upload */}
         <div>
           <label className="block text-yellow-500 text-sm mb-1">Imagen</label>
           <input
             type="file"
             name="img"
             accept="image/*"
-            onChange={(e) => formik.setFieldValue("img", e.currentTarget.files?.[0])}
+            onChange={(e) => formik.setFieldValue("img", e.currentTarget.files?.[0] || null)}
             className="w-full text-white p-2 bg-gray-800 border border-yellow-500/20 rounded"
           />
         </div>
 
-        {/* Botón */}
         <button
           type="submit"
           disabled={uploading}
-          className="bg-yellow-500 text-black px-4 py-2 rounded hover:bg-yellow-400 transition"
+          className="bg-yellow-500 text-black px-4 py-2 rounded hover:bg-yellow-400 transition disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {uploading ? "Cargando..." : "Crear Producto"}
         </button>
