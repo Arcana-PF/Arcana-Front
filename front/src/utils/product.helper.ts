@@ -1,20 +1,33 @@
-import mock_products from "./mock_products";
+import { IProduct } from "@/types";
 
-export const getProductsDB = async () => {
-  return mock_products;
-};
+const APIURL = process.env.NEXT_PUBLIC_API_URL;
 
-// Obtener un producto por su ID, asegurando que siempre tenga valores válidos
-export const getProductById = async (id: string) => {
-  const product = mock_products.find((p) => Number(p.id) === Number(id));
+export async function getProductsDB(): Promise<IProduct[]> {
+    try {
+        const response = await fetch(`${APIURL}/products`);
 
-  return product ?? {
-    id: 0, // Valor por defecto para evitar errores
-    name: "Producto no encontrado",
-    description: "Sin descripción",
-    price: 0,
-    stock: 0,
-    imgUrl: "default.jpg",
-    category: "Sin categoría",
-  };
-};
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error al obtener productos:", error);
+        throw new Error("No se pudieron obtener los productos.");
+    }
+}
+
+export async function getProductsById(id: string): Promise<IProduct> {
+    try {
+        const response = await fetch(`${APIURL}/products/${id}`);
+
+        if (!response.ok) {
+            throw new Error(`Producto no encontrado: Error ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error(`Error al obtener el producto con ID ${id}:`, error);
+        throw new Error(`No se pudo obtener el producto con ID ${id}.`);
+    }
+}

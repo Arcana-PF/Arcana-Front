@@ -70,7 +70,6 @@ onSubmit={async (values, { setSubmitting }) => {
 
     // Llamada al backend
     const response = await login(values);
-    console.log("Respuesta completa del servidor:", response);
 
     // Extraer token y usuario de la respuesta
     const { validationToken, user } = response;

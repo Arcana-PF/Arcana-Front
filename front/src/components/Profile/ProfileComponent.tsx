@@ -78,13 +78,16 @@ const PerfilUsuario = () => {
               </div>
             </div>
 
-            {/* ID del usuario (útil para desarrollo) */}
-            <div className="mt-6 pt-6 border-t border-yellow-500/20">
-              <div className="bg-purple-900/30 p-4 rounded-xl border border-purple-500/30">
-                <h3 className="text-xs font-medium text-purple-400 mb-2 uppercase tracking-wide">ID del Iniciado</h3>
-                <p className="font-mono text-purple-300 text-sm">#{userData?.user?.id}</p>
-              </div>
+            {/* Botón de órdenes arcano */}
+            <div className="mt-6 flex justify-center">
+              <Link
+                href="/profile/orders"
+                className="inline-block text-center text-yellow-500 font-semibold bg-yellow-500/20 px-4 py-2 rounded-lg border border-yellow-500/30 hover:bg-yellow-500/30 hover:text-yellow-400 transition-all duration-300 shadow-md"
+              >
+                ✦ Ver Órdenes ✦
+              </Link>
             </div>
+
           </div>
         </div>
       </div>
