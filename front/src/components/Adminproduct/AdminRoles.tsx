@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react"
 import Swal from "sweetalert2"
-import Cookies from "js-cookie"
+
+import { useAuth } from "@/context/AuthContext"
 
 interface User {
   id: string
@@ -27,19 +28,11 @@ const AdminRoleAssigner = () => {
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
-  const getToken = (): string => {
-    try {
-      const session = Cookies.get("userSession") || localStorage.getItem("userSession")
-      if (!session) return ""
-      const parsed = JSON.parse(session)
-      return parsed.token || ""
-    } catch (error) {
-      console.warn("Error al leer token:", error)
-      return ""
-    }
-  }
+  
 
-  const token = getToken()
+  const { userData } = useAuth();
+const token = userData?.token || "";
+
 
   const fetchAllUsersWithRoles = useCallback(async () => {
     if (!token) return

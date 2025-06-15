@@ -50,12 +50,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         ...userData,
         isAdmin: Boolean(userData?.user?.isAdmin),
       };
+      const oneHourFromNow = new Date(new Date().getTime() + 60 * 60 * 1000); // 1 hora en milisegundos
 
       localStorage.setItem('userSession', JSON.stringify(normalizedData));
       Cookies.set('userSession', JSON.stringify(normalizedData), {
         path: '/',
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
+        expires: oneHourFromNow,
       });
     } else {
       localStorage.removeItem('userSession');
