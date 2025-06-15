@@ -61,14 +61,16 @@ const LoginComponent = () => {
                 const response = await login(values);
                 const { validationToken, user } = response;
 
-                if (!user) throw new Error("No se encontró información del usuario.");
+                if (!user) {
+                  throw new Error("No se encontró información del usuario.");
+                }
 
-                
                 setUserData({
-                  validationToken,    // Usa el token del backend
-                  token: validationToken,  // Duplica el valor para cumplir con la interfaz
+                  validationToken,    // Token del backend
+                  token: validationToken,  // Para compatibilidad
                   user               // Datos del usuario
                 });
+                
                 Swal.close()
 
                 await Swal.fire({
@@ -86,6 +88,7 @@ const LoginComponent = () => {
                 router.push("/")
               } catch (error: unknown) {
                 Swal.close()
+                console.error("Error al iniciar sesión:", error);
                 const message = error instanceof Error ? error.message : "Ocurrió un problema desconocido."
                 await Swal.fire({
                   icon: "error",
