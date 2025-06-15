@@ -32,7 +32,6 @@ export async function register(userData: IRegisterProps) {
 export async function login(userData: IloginProps) {
   try {
     // Verificando el contenido del body antes de enviarlo
-    console.log("Contenido de body:", JSON.stringify(userData));
 
     const response = await fetch(`${APIURL}/auth/signin`, {
       method: "POST",
@@ -43,7 +42,6 @@ export async function login(userData: IloginProps) {
     });
 
     if (response.ok) {
-      console.log("Respuesta JSON:", await response.clone().json());
       // Retorna la respuesta del servidor, la cual el componente puede usar para mostrar un mensaje de éxito
       return await response.json();
     } else {

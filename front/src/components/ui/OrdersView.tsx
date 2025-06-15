@@ -19,8 +19,6 @@ const OrdersView = () => {
     loadOrders();
   }, [loadOrders]);
 
-  console.log(orders);
-
   return (
     <div className="bg-gradient-to-br from-purple-900 via-black to-gray-900 min-h-screen p-6 text-gray-300 font-serif">
       {/* Efecto de luz mágica */}

@@ -1,0 +1,38 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { IProduct } from "@/types";
+
+const CartSummary: React.FC = () => {
+  const [products, setProducts] = useState<IProduct[]>([]);
+
+  // Cargar productos desde la API o fuente externa
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const response = await fetch("/api/products");
+        const data = await response.json();
+        setProducts(Array.isArray(data) ? data : []); // Asegurar que `products` sea un array
+      } catch (error) {
+        console.error("Error al obtener productos:", error);
+        setProducts([]); // Evita que `products` sea undefined
+      }
+    }
+
+    fetchProducts();
+  }, []);
+
+  // Calcular el precio total del carrito
+  const totalPrice = Array.isArray(products)
+    ? products.reduce((acc, item) => acc + item.price * (item.quantity ?? 1), 0)
+    : 0;
+
+  return (
+    <div className="p-6 bg-white shadow-md rounded-lg">
+      <h2 className="text-xl font-bold text-gray-700">Resumen del carrito</h2>
+      <p className="text-lg text-purple-700 mt-4">Total: ${totalPrice.toFixed(2)}</p>
+    </div>
+  );
+};
+
+export default CartSummary;
