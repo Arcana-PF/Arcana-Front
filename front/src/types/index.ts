@@ -61,12 +61,15 @@ export interface IUserSession {
 }
 
 export interface IOrder {
-    id: number;
-    status: string;
-    date: Date;
-    products: IProduct[];
+  id: string;
+  orderId: string;  
+  localOrderId: string; 
+  status: "CART" | "PENDING" | "CONFIRMED" | "CANCELLED"; 
+  date: Date;
+  totalPrice: number;
+  user: ICartUser; 
+  items: ICartItem[]; 
 }
-
 export interface ICartItem {
   id: string
   cart: string

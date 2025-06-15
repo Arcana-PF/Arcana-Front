@@ -9,11 +9,15 @@ const OrdersView = () => {
   const [orders, setOrders] = useState<IOrder[]>([]);
 
   const loadOrders = useCallback(async () => {
-    if (userData?.token) {
-      const response = await getOrders(userData?.token);
+    if (!userData?.token) return;
+    
+    try {
+      const response = await getOrders(userData.token);
       setOrders(response);
+    } catch (error) {
+      console.error("Error al obtener órdenes:", error);
     }
-  }, [userData?.token]); // Ahora `loadOrders` se memoriza correctamente
+  }, [userData?.token]);
 
   useEffect(() => {
     loadOrders();
@@ -33,16 +37,25 @@ const OrdersView = () => {
         </h1>
 
         {orders.length ? (
-          orders.map((item) => (
+          orders.map((order) => (
             <div
-              key={item.id}
+              key={order.id}
               className="border border-purple-500 rounded-md p-4 mb-4 bg-purple-900/30 hover:border-yellow-400 hover:shadow-xl transition-all duration-300"
             >
               <p className="text-lg font-semibold text-yellow-300">
-                ⌘ Estado: <span className="uppercase">{item.status}</span>
+                ⌘ Estado: <span className="uppercase">{order.status}</span>
               </p>
               <p className="text-sm text-gray-400">
-                ⏳ Fecha: {new Date(item.date).toLocaleDateString()}
+                ⏳ Fecha: {new Date(order.date).toLocaleDateString()}
+              </p>
+              <p className="text-sm text-gray-400">
+                🔗 Order ID: <span className="text-yellow-400">{order.orderId}</span>
+              </p>
+              <p className="text-sm text-gray-400">
+                🏠 Local Order ID: <span className="text-yellow-400">{order.localOrderId}</span>
+              </p>
+              <p className="text-sm text-gray-500">
+                💰 Total: ${Number(order.totalPrice).toFixed(2)}
               </p>
             </div>
           ))
