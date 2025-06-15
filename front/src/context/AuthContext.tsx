@@ -25,27 +25,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Cargar datos desde localStorage al iniciar
   useEffect(() => {
     const session = localStorage.getItem('userSession');
+
     if (session) {
-      setUserData(JSON.parse(session));
+      try {
+        const parsedSession = JSON.parse(session);
+        if (parsedSession && typeof parsedSession === 'object') {
+          setUserData(parsedSession);
+        } else {
+          console.error("Formato inválido en userSession:", session);
+          localStorage.removeItem('userSession');
+        }
+      } catch (error) {
+        console.error("Error al parsear userSession desde localStorage:", error);
+        localStorage.removeItem('userSession');
+      }
     }
     setLoading(false);
   }, []);
 
   // Guardar o limpiar datos según userData
- useEffect(() => {
-  if (userData) {
-    localStorage.setItem('userSession', JSON.stringify(userData));
-    Cookies.set("userSession", userData.validationToken, {
-      path: '/',
-      sameSite: 'lax',
-    });
-  } else {
-    localStorage.removeItem('userSession');
-    Cookies.remove('userSession');
-  }
-}, [userData]);
+  useEffect(() => {
+    if (userData) {
+      const normalizedData = {
+        ...userData,
+        isAdmin: Boolean(userData?.user?.isAdmin),
+      };
 
-
+      localStorage.setItem('userSession', JSON.stringify(normalizedData));
+      Cookies.set('userSession', JSON.stringify(normalizedData), {
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+      });
+    } else {
+      localStorage.removeItem('userSession');
+      Cookies.remove('userSession');
+    }
+  }, [userData]);
 
   return (
     <AuthContext.Provider value={{ userData, setUserData }}>

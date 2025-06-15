@@ -41,69 +41,69 @@ const LoginComponent = () => {
           </div>
 
           <Formik
-            initialValues={{ email: "", password: "" }}
-            validate={validateLoginForm}
-            onSubmit={async (values, { setSubmitting }) => {
-              try {
-                Swal.fire({
-                  title: "Invocando acceso...",
-                  text: "Conectando con el plano arcano",
-                  allowOutsideClick: false,
-                  allowEscapeKey: false,
-                  showConfirmButton: false,
-                  background: "#0e0a1f",
-                  color: "#e5e7eb",
-                  didOpen: () => {
-                    Swal.showLoading()
-                  },
-                })
+        initialValues={{ email: "", password: "" }}
+        validate={validateLoginForm}
+        onSubmit={async (values, { setSubmitting }) => {
+          try {
+            Swal.fire({
+              title: "Invocando acceso...",
+              text: "Conectando con el plano arcano",
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              showConfirmButton: false,
+              background: "#0e0a1f",
+              color: "#e5e7eb",
+              didOpen: () => {
+                Swal.showLoading()
+              },
+            })
 
-                const response = await login(values);
-                const { validationToken, user } = response;
+            const response = await login(values);
+            const { validationToken, user } = response;
 
-                if (!user) {
-                  throw new Error("No se encontró información del usuario.");
-                }
+            if (!user) {
+              throw new Error("No se encontró información del usuario.");
+            }
 
-                setUserData({
-                  validationToken,    // Token del backend
-                  token: validationToken,  // Para compatibilidad
-                  user               // Datos del usuario
-                });
-                
-                Swal.close()
+            setUserData({
+              validationToken,    // Token del backend
+              token: validationToken,  // Para compatibilidad
+              user               // Datos del usuario
+            });
+            
+            Swal.close()
 
-                await Swal.fire({
-                  icon: "success",
-                  title: `¡Bienvenido de vuelta, ${user.name}!`,
-                  text: "Has accedido exitosamente al Círculo Arcano.",
-                  confirmButtonText: "Continuar",
-                  confirmButtonColor: "#facc15",
-                  background: "#0e0a1f",
-                  color: "#e5e7eb",
-                  timer: 3000,
-                  timerProgressBar: true,
-                })
+            await Swal.fire({
+              icon: "success",
+              title: `¡Bienvenido de vuelta, ${user.name}!`,
+              text: "Has accedido exitosamente al Círculo Arcano.",
+              confirmButtonText: "Continuar",
+              confirmButtonColor: "#facc15",
+              background: "#0e0a1f",
+              color: "#e5e7eb",
+              timer: 3000,
+              timerProgressBar: true,
+            })
 
-                router.push("/")
-              } catch (error: unknown) {
-                Swal.close()
-                console.error("Error al iniciar sesión:", error);
-                const message = error instanceof Error ? error.message : "Ocurrió un problema desconocido."
-                await Swal.fire({
-                  icon: "error",
-                  title: "Error al iniciar sesión",
-                  text: message,
-                  confirmButtonText: "Intentar de nuevo",
-                  confirmButtonColor: "#7c3aed",
-                  background: "#0e0a1f",
-                  color: "#e5e7eb",
-                })
-              } finally {
-                setSubmitting(false)
-              }
-            }}
-          >
+            router.push("/")
+          } catch (error: unknown) {
+            Swal.close()
+            console.error("Error al iniciar sesión:", error);
+            const message = error instanceof Error ? error.message : "Ocurrió un problema desconocido."
+            await Swal.fire({
+              icon: "error",
+              title: "Error al iniciar sesión",
+              text: message,
+              confirmButtonText: "Intentar de nuevo",
+              confirmButtonColor: "#7c3aed",
+              background: "#0e0a1f",
+              color: "#e5e7eb",
+            })
+          } finally {
+            setSubmitting(false)
+          }
+        }}
+      >
             {({ isSubmitting, errors, touched }) => (
               <Form className="space-y-6">
                 {/* Email */}

@@ -6,18 +6,20 @@ import { useAuth } from "@/context/AuthContext";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 
+const APIURL = process.env.NEXT_PUBLIC_API_URL;
+
 interface ICardProps extends IProduct {
   rating?: number;
   onAddToFavorites?: () => void;
-  onClick?: () => void; 
+  onClick?: () => void;
 }
 
-const Card: React.FC<ICardProps> = ({ 
-  id, 
-  name, 
-  description, 
-  price, 
-  imgUrl, 
+const Card: React.FC<ICardProps> = ({
+  id,
+  name,
+  description,
+  price,
+  imgUrl,
   categories,
   stock,
   rating = 4.5,
@@ -26,17 +28,24 @@ const Card: React.FC<ICardProps> = ({
 }) => {
   const { userData } = useAuth();
   const router = useRouter();
-  const displayedCategories = categories.slice(0, 3); // Muestra hasta 3
+  
+  // Muestra hasta 3 categorías
+  const displayedCategories = categories.slice(0, 3);
+  // También extrae la primera categoría como fallback
+  const primaryCategory = categories.length > 0 ? categories[0].name : "Sin categoría";
+
+  // Navega al detalle del producto si el click no proviene de un botón
   const handleCardClick = (e: React.MouseEvent) => {
-    // Solo navega si el click no fue en el botón de carrito/favoritos
-    if (!(e.target as HTMLElement).closest('button')) {
+    if (!(e.target as HTMLElement).closest('button') && !onClick) {
       router.push(`/product/${id}`);
     }
   };
 
+  // Maneja el agregar producto al carrito
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
+    // Si el usuario no está autenticado, dirigimos a login y mostramos advertencia
     if (!userData?.token) {
       Swal.fire({
         icon: "warning",
@@ -46,101 +55,79 @@ const Card: React.FC<ICardProps> = ({
         confirmButtonText: "Ir al login",
       }).then((result) => {
         if (result.isConfirmed) {
-          window.location.href = "/login";
+          router.push("/login");
         }
       });
       return;
     }
 
-    let cart: Array<IProduct & { quantity?: number }> = [];
     try {
-      const storedCart = localStorage.getItem("cart");
-      if (storedCart) {
-        cart = JSON.parse(storedCart);
-      }
-    } catch (error) {
-      console.error("Error al parsear el carrito:", error);
-    }
+      // Se hace la solicitud POST para agregar el producto al carrito
+      const response = await fetch(`${APIURL}/cart/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userData.token}`,
+        },
+        body: JSON.stringify({
+          productId: id,
+          quantity: 1,
+        }),
+      });
 
-    const productIndex = cart.findIndex((item) => item.id === id);
-    
-    if (productIndex !== -1) {
-      const newQuantity = (cart[productIndex].quantity || 0) + 1;
-      if (newQuantity > stock) {
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => "Error desconocido");
+        // Si errorData tiene una propiedad "message", úsala; de lo contrario, conviértelo a string
+        const errorMessage =
+          typeof errorData === "string"
+            ? errorData
+            : errorData.message || JSON.stringify(errorData);
         Swal.fire({
           icon: "error",
-          title: "Stock insuficiente",
-          text: `Solo quedan ${stock} unidades disponibles.`,
+          title: "Error al agregar producto",
+          text: errorMessage,
           confirmButtonColor: "#ef4444",
         });
         return;
       }
-      cart[productIndex].quantity = newQuantity;
-    } else {
-      if (1 > stock) {
-        Swal.fire({
-          icon: "error",
-          title: "Stock insuficiente",
-          text: `Solo quedan ${stock} unidades disponibles.`,
-          confirmButtonColor: "#ef4444",
-        });
-        return;
-      }
-      cart.push({ 
-        id, 
-        name, 
-        imgUrl, 
-        description, 
-        price, 
-        stock, 
-        isActive: true, 
-        categories, 
-        quantity: 1 
+
+      Swal.fire({
+        icon: "success",
+        title: "¡Agregado al carrito!",
+        background: "#7e22ce",
+        color: "#fff",
+        iconColor: "#facc15",
+      });
+
+    } catch (error) {
+      console.error("Error inesperado al agregar al carrito:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error inesperado",
+        text: "Inténtalo de nuevo más tarde.",
+        confirmButtonColor: "#ef4444",
       });
     }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-
-    const toast = Swal.mixin({
-      toast: true,
-      position: "top-end",
-      showConfirmButton: false,
-      timer: 2000,
-      timerProgressBar: true,
-      didOpen: (toast) => {
-        toast.addEventListener('mouseenter', Swal.stopTimer);
-        toast.addEventListener('mouseleave', Swal.resumeTimer);
-      }
-    });
-
-    await toast.fire({
-      icon: "success",
-      title: "¡Agregado al carrito!",
-      background: "#7e22ce",
-      color: "#fff",
-      iconColor: "#facc15",
-    });
   };
 
   return (
-    <div 
+    <div
       className="group relative w-64 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-      onClick={onClick || handleCardClick} 
+      onClick={onClick || handleCardClick}
     >
-              {/* Imagen del producto */}
-              <div className="relative h-56 w-full overflow-hidden bg-gray-100">
-                <img
+      {/* Imagen del producto */}
+      <div className="relative h-56 w-full overflow-hidden bg-gray-100">
+        <img
           src={imgUrl}
           alt={`${name} - ${displayedCategories.map(cat => cat.name).join(', ') || "Sin categoría"}`}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-                
-                {/* Badges */}
-                {/* Badges de múltiples categorías */}
+        
+        {/* Badges de múltiples categorías */}
         {categories.length > 0 && (
           <div className="absolute top-2 left-2 flex gap-1 flex-wrap max-w-full">
-            {categories.slice(0, 3).map((cat) => (
+            {displayedCategories.map((cat) => (
               <span
                 key={cat.name}
                 className="bg-purple-700/80 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm truncate max-w-[80px]"
@@ -151,7 +138,8 @@ const Card: React.FC<ICardProps> = ({
             ))}
           </div>
         )}
-                {/* Rating */}
+
+        {/* Panel de rating */}
         {rating && (
           <div className="absolute bottom-3 left-3 flex items-center bg-white/90 px-2 py-1 rounded-full">
             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -160,7 +148,7 @@ const Card: React.FC<ICardProps> = ({
         )}
 
         {/* Botón de favoritos */}
-        <button 
+        <button
           className="absolute top-3 right-3 p-1.5 bg-white/80 rounded-full backdrop-blur-sm hover:bg-white transition-colors shadow-sm z-20 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
@@ -171,11 +159,11 @@ const Card: React.FC<ICardProps> = ({
         </button>
       </div>
 
-      {/* Contenido */}
+      {/* Contenido del card */}
       <div className="p-4">
         <h3 className="font-medium text-gray-900 mb-1 line-clamp-1">{name}</h3>
         <p className="text-sm text-gray-500 mb-3 line-clamp-2">{description}</p>
-        
+
         <div className="flex items-center justify-between">
           <div>
             <p className="text-lg font-bold text-purple-700">
@@ -185,15 +173,16 @@ const Card: React.FC<ICardProps> = ({
               {stock > 0 ? `Disponible (${stock})` : 'Agotado'}
             </p>
           </div>
-          
-          
-          <button 
-            className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white rounded-lg transition-all shadow-md flex items-center justify-center z-20"
-            onClick={handleAddToCart}
-          >
-            <ShoppingCart className="w-5 h-5 cursor-pointer" />
-            <span className="ml-2 text-sm font-medium cursor-pointer">Agregar</span>
-          </button>
+
+          {!userData?.user?.isAdmin && (
+            <button
+              className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white rounded-lg transition-all shadow-md flex items-center justify-center z-20"
+              onClick={handleAddToCart}
+            >
+              <ShoppingCart className="w-5 h-5 cursor-pointer" />
+              <span className="ml-2 text-sm font-medium cursor-pointer">Agregar</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
