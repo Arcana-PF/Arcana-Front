@@ -90,7 +90,7 @@ export default function Home() {
                 <p className="text-gray-400 mb-4 leading-relaxed">{category.description}</p>
                 <div className="flex items-center text-purple-400 font-medium group-hover:text-yellow-400 transition-colors duration-300">
                   <span className="text-sm">Explorar</span>
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300 cursor-pointer" />
                 </div>
               </div>
             ))}
@@ -113,7 +113,7 @@ export default function Home() {
     </div>
 
         <CardList 
-        category="Velas" 
+        categories={["Velas"]}
         sort="Precio: Menor a Mayor"
         page={currentPage}
         onTotalPagesChange={setTotalPages}
@@ -126,7 +126,7 @@ export default function Home() {
           <button
             key={i}
             onClick={() => setCurrentPage(i + 1)}
-            className={`px-4 py-2 rounded ${currentPage === i + 1 ? 'bg-purple-600 text-white' : 'bg-gray-200'}`}
+            className={`cursor-pointer px-4 py-2 rounded ${currentPage === i + 1 ? 'bg-purple-600 text-white' : 'bg-gray-200'} `}
           >
             {i + 1}
           </button>
@@ -137,7 +137,7 @@ export default function Home() {
       <Link href="/products">
         <button className="cursor-pointer inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-300 shadow-md hover:shadow-lg">
           Explorar Catálogo Completo
-          <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+          <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1 cursor-pointer" />
         </button>
       </Link>
     </div>
