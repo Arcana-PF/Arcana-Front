@@ -22,7 +22,7 @@ const ChatbotComponent = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Hola, soy tu asistente virtual de Arcana. ¿En qué puedo ayudarte hoy?',
+      content: 'Hola, soy ArcanBot, tu asistente virtual de Arcana. ¿En qué puedo ayudarte hoy?',
     },
   ]);
   const [input, setInput] = useState('');
@@ -130,7 +130,8 @@ const ChatbotComponent = () => {
         className="fixed bottom-6 right-6 z-50 p-4 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors cursor-pointer"
         aria-label={isOpen ? "Cerrar chatbot" : "Abrir chatbot"}
       >
-        {isOpen ? <X size={24} /> : <Bot size={24} />}
+        {isOpen ? <X size={24} /> : <Bot size={26} /> }
+        
       </button>
 
       {/* Ventana del chatbot */}
