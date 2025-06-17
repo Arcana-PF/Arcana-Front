@@ -12,6 +12,8 @@ interface CardListProps {
   categories?: string[]
   itemsPerPage?: number
   onTotalPagesChange?: (total: number) => void
+  
+  
 }
 
 const CardList: React.FC<CardListProps> = ({
