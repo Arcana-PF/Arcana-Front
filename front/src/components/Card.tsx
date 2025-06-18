@@ -1,10 +1,11 @@
 'use client';
 import React from "react";
 import { IProduct } from "@/types";
-import { Heart, ShoppingCart, Star } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
+import Rating from "./Rating/Rating";
 
 const APIURL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -28,7 +29,7 @@ const Card: React.FC<ICardProps> = ({
 }) => {
   const { userData } = useAuth();
   const router = useRouter();
-  
+
   // Muestra hasta 3 categorías
   const displayedCategories = categories.slice(0, 3);
   // También extrae la primera categoría como fallback
@@ -119,11 +120,11 @@ const Card: React.FC<ICardProps> = ({
       <div className="relative h-56 w-full overflow-hidden bg-gray-100">
         <img
           src={imgUrl}
-          alt={`${name} - ${primaryCategory}`}  
+          alt={`${name} - ${primaryCategory}`}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-        
+
         {/* Badges de múltiples categorías */}
         {categories.length > 0 && (
           <div className="absolute top-2 left-2 flex gap-1 flex-wrap max-w-full">
@@ -140,12 +141,9 @@ const Card: React.FC<ICardProps> = ({
         )}
 
         {/* Panel de rating */}
-        {rating && (
-          <div className="absolute bottom-3 left-3 flex items-center bg-white/90 px-2 py-1 rounded-full">
-            <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
-            <span className="text-xs font-medium ml-1">{rating.toFixed(1)}</span>
-          </div>
-        )}
+        <div className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 rounded-full">
+          <Rating value={rating} />
+        </div>
 
         {/* Botón de favoritos */}
         <button

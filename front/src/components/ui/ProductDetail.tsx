@@ -4,8 +4,9 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { IProduct } from "@/types";
 import { useCart } from "@/context/CartContext";
-import { Heart, ShoppingCart, Star } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import Swal from "sweetalert2";
+import Rating from "../Rating/Rating";
 
 const ProductDetail: React.FC<IProduct> = ({
   id,
@@ -19,19 +20,16 @@ const ProductDetail: React.FC<IProduct> = ({
   onAddToFavorites,
 }) => {
   const { userData } = useAuth();
-  const { addToCart } = useCart(); // Obtiene la función del contexto para agregar producto
+  const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
 
-  // Se extrae la primera categoría o se asigna "Sin categoría"
   const category = categories.length > 0 ? categories[0].name : "Sin categoría";
 
-  // Lógica del input para limitar entre 1 y stock máximo
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuantity = parseInt(e.target.value, 10) || 1;
     setQuantity(Math.max(1, Math.min(stock, newQuantity)));
   };
 
-  // Función para agregar producto al carrito
   const handleAddToCart = () => {
     if (!userData?.token) {
       Swal.fire({
@@ -42,8 +40,6 @@ const ProductDetail: React.FC<IProduct> = ({
       return;
     }
 
-    // Se llama a la función del contexto; se inyecta la cantidad deseada 
-    // (nota: quantity se agrega en el objeto para que el helper o la lógica en el contexto la pueda usar).
     addToCart({
       id,
       name,
@@ -53,10 +49,9 @@ const ProductDetail: React.FC<IProduct> = ({
       price,
       isActive: true,
       categories,
-      quantity, // opcional en IProduct, pero sirve para indicar cuántas unidades agregar
+      quantity,
     });
 
-    // Se muestra una alerta de éxito y, si el usuario lo confirma, se redirige al carrito
     Swal.fire({
       icon: "success",
       title: "¡Producto agregado!",
@@ -82,13 +77,17 @@ const ProductDetail: React.FC<IProduct> = ({
           loading="lazy"
         />
 
-        {/* Rating */}
-        {rating && (
-          <div className="absolute bottom-3 left-3 flex items-center bg-white/90 px-2 py-1 rounded-full">
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-xs font-medium ml-1">{rating.toFixed(1)}</span>
+        {/* Producto agotado: visible para todos */}
+        {stock === 0 && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow z-10">
+            Producto Agotado
           </div>
         )}
+
+        {/* Rating */}
+        <div className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 rounded-full">
+          <Rating value={rating} />
+        </div>
 
         {/* Botón de favoritos */}
         <button

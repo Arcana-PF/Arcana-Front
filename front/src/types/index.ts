@@ -94,3 +94,21 @@ export interface ICart {
   totalPrice: number
   isActive: boolean
 }
+
+
+export interface ProductFormValues {
+  name: string;
+  description: string;
+  price: string;
+  stock: string;
+  img: File | null;
+  selectedCategories: string[];
+  newCategories: string;
+}
+
+export interface ApiResponse {
+  id?: string;
+  product?: {
+    id: string;
+  };
+}
