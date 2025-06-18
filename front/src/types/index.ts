@@ -17,9 +17,11 @@ export interface IProduct {
     onAddToFavorites?: () => void;
 }
 
-export interface ICategory{
-    id: number;
-    name: string;
+export interface ICategory {
+  id: string
+  name: string
+  isActive: boolean
+  products: string[]
 }
 export interface IloginProps{
     email: string;
@@ -46,6 +48,7 @@ export interface IRegisterErrors{
 }
 
 export interface IUserSession {
+    validationToken: string;
     token: string;
     user: {
         address: string;
@@ -55,7 +58,9 @@ export interface IUserSession {
         phone: string;
         orders: IOrder[];
         isAdmin: boolean;
+        
     };
+    
 }
 
 export interface IOrder {
@@ -65,10 +70,45 @@ export interface IOrder {
     products: IProduct[];
 }
 
+export interface ICartItem {
+  id: string
+  cart: string
+  product: IProduct
+  quantity: number
+}
+
+export interface ICartUser {
+  id: string
+  name: string
+  email: string
+  phone: string
+  address: string
+  isAdmin: boolean
+  isActive: boolean
+}
+
 export interface ICart {
+  id: string
+  user: ICartUser
+  items: ICartItem[]
+  totalPrice: number
+  isActive: boolean
+}
+
+
+export interface ProductFormValues {
+  name: string;
+  description: string;
+  price: string;
+  stock: string;
+  img: File | null;
+  selectedCategories: string[];
+  newCategories: string;
+}
+
+export interface ApiResponse {
+  id?: string;
+  product?: {
     id: string;
-    quantity: number;
-    priceAtPurchase: number;
-    products: IProduct[];
-    totalPrice: number;
+  };
 }

@@ -1,15 +1,17 @@
-'use client';
+'use client'
 
 import React, { useEffect, useState, useMemo } from "react";
 import Card from "./Card";
 import { getProductsDB } from "@/utils/product.helper";
 import { useRouter } from "next/navigation";
 import { IProduct } from "@/types";
+import { useAuth } from "@/context/AuthContext";
+import ToggleProductVisibilityButton from "./VisibilityButton/ToggleProductVisibilityButtonProps";
 
 interface CardListProps {
   sort?: string;
   page?: number;
-  category?: string;
+  categories?: string[];
   itemsPerPage?: number;
   onTotalPagesChange?: (total: number) => void;
 }
@@ -17,88 +19,100 @@ interface CardListProps {
 const CardList: React.FC<CardListProps> = ({
   sort = "Recomendados",
   page = 1,
-  category = "Todos",
+  categories = [],
   itemsPerPage = 8,
   onTotalPagesChange,
 }) => {
   const router = useRouter();
+  const { userData } = useAuth(); // 🔑 Para saber si es admin
   const [products, setProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await getProductsDB();
-        setProducts(data);
-      } catch (err) {
-        console.error("Error fetching products:", err);
-        setError("Error al cargar productos.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchProducts = async () => {
+    try {
+      const data = await getProductsDB();
+      setProducts(data);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setError("Error al cargar productos.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProducts();
   }, []);
 
-  // ✅ Corrección en el filtrado por categoría
   const filtered = useMemo(() => {
-    if (category === "Todos") return products;
+    if (categories.length === 0) return products;
     return products.filter((product) =>
-      product.categories.some((c) => c.name === category)
+      categories.every((cat) => product.categories.some((c) => c.name === cat))
     );
-  }, [category, products]);
+  }, [categories, products]);
 
-  // ✅ Ordenamiento de productos con una mejor estructura
+  const visibleProducts = useMemo(() => {
+    return filtered.filter((product) => userData?.user?.isAdmin || product.isActive);
+  }, [filtered, userData]);
+
   const sortedProducts = useMemo(() => {
-    const sorted = [...filtered];
+    const sorted = [...visibleProducts];
     switch (sort) {
       case "Precio: Menor a Mayor":
         return sorted.sort((a, b) => a.price - b.price);
       case "Precio: Mayor a Menor":
         return sorted.sort((a, b) => b.price - a.price);
       case "Novedades":
-        return sorted.reverse(); // Asumiendo que el backend envía productos más nuevos primero
+        return sorted.reverse();
       default:
         return sorted;
     }
-  }, [sort, filtered]);
+  }, [sort, visibleProducts]);
 
-  // ✅ Cálculo de la paginación
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
   const startIndex = (page - 1) * itemsPerPage;
   const paginated = sortedProducts.slice(startIndex, startIndex + itemsPerPage);
 
-  // ✅ Notificación de cambio de páginas disponibles
   useEffect(() => {
-    if (onTotalPagesChange) {
-      onTotalPagesChange(totalPages);
-    }
+    onTotalPagesChange?.(totalPages);
   }, [totalPages, onTotalPagesChange]);
 
-  // ✅ Manejo del estado de carga y errores
-  if (loading) {
-    return <div className="text-center text-gray-500">Cargando productos...</div>;
-  }
+  if (loading) return <div className="text-center text-gray-500">Cargando productos...</div>;
+  if (error) return <div className="text-center text-red-500">{error}</div>;
 
-  if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
-  }
-
-  // ✅ Renderizado optimizado y corrección en la propagación de props
   return (
     <div className="flex flex-wrap items-center gap-4 p-4 justify-center">
       {paginated.length ? (
         paginated.map((product) => (
-          <Card
-            key={product.id}
-            {...product}
-            onClick={() => router.push(`/products/${product.id}`)}
-          />
+          <div key={product.id} className="relative">
+            <Card
+              {...product}
+              onClick={() => router.push(`/products/${product.id}`)}
+            />
+            {/* Muestra la nota si es admin y el producto está inactivo */}
+            {userData?.user?.isAdmin && !product.isActive && (
+              <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded shadow-md z-10">
+                Producto inactivo
+              </div>
+            )}
+            {/* Botón de visibilidad solo para admin */}
+            {userData?.user?.isAdmin && (
+              <div className="mt-2 flex justify-center">
+                <ToggleProductVisibilityButton
+                  productId={product.id}
+                  isActive={product.isActive}
+                  token={userData.token}
+                  onToggle={fetchProducts} // 🔄 Refresca lista al cambiar visibilidad
+                />
+              </div>
+            )}
+          </div>
         ))
       ) : (
-        <div className="text-center text-gray-500">No hay productos disponibles.</div>
+        <div className="text-center text-gray-500">
+          No hay productos que coincidan con los filtros seleccionados.
+        </div>
       )}
     </div>
   );

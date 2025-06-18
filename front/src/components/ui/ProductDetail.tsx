@@ -1,23 +1,33 @@
 "use client";
 
+import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { IProduct } from "@/types";
-import { useCart } from "@/context/CartContext"; // ✅ Usa el contexto del carrito
-import { Heart, ShoppingCart, Star } from "lucide-react";
-import React, { useState } from "react";
+import { useCart } from "@/context/CartContext";
+import { Heart, ShoppingCart } from "lucide-react";
 import Swal from "sweetalert2";
+import Rating from "../Rating/Rating";
 
 const ProductDetail: React.FC<IProduct> = ({
-  id, name, imgUrl, description, stock, price, categories, rating = 4.5, onAddToFavorites,
+  id,
+  name,
+  imgUrl,
+  description,
+  stock,
+  price,
+  categories,
+  rating,
+  onAddToFavorites,
 }) => {
   const { userData } = useAuth();
-  const { addToCart } = useCart(); // ✅ Obtiene la función de agregar productos
+  const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
 
   const category = categories.length > 0 ? categories[0].name : "Sin categoría";
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuantity(Math.max(1, Math.min(stock, parseInt(e.target.value, 10) || 1)));
+    const newQuantity = parseInt(e.target.value, 10) || 1;
+    setQuantity(Math.max(1, Math.min(stock, newQuantity)));
   };
 
   const handleAddToCart = () => {
@@ -30,7 +40,17 @@ const ProductDetail: React.FC<IProduct> = ({
       return;
     }
 
-    addToCart({ id, name, imgUrl, description, stock, price, isActive: true, categories, quantity });
+    addToCart({
+      id,
+      name,
+      imgUrl,
+      description,
+      stock,
+      price,
+      isActive: true,
+      categories,
+      quantity,
+    });
 
     Swal.fire({
       icon: "success",
@@ -57,13 +77,17 @@ const ProductDetail: React.FC<IProduct> = ({
           loading="lazy"
         />
 
-        {/* Rating */}
-        {rating && (
-          <div className="absolute bottom-3 left-3 flex items-center bg-white/90 px-2 py-1 rounded-full">
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-xs font-medium ml-1">{rating.toFixed(1)}</span>
+        {/* Producto agotado: visible para todos */}
+        {stock === 0 && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow z-10">
+            Producto Agotado espera a que llegue el nuevo stock
           </div>
         )}
+
+        {/* Rating */}
+        <div className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 rounded-full">
+          <Rating value={rating} />
+        </div>
 
         {/* Botón de favoritos */}
         <button
@@ -92,7 +116,8 @@ const ProductDetail: React.FC<IProduct> = ({
             </p>
           </div>
 
-          {/* Selector de cantidad con validación */}
+          {/* Selector de cantidad y botón para agregar al carrito */}
+          {/* Selector de cantidad y botón para agregar al carrito */}
           {!userData?.user.isAdmin && (
             <div className="flex items-center gap-6">
               <input
@@ -101,11 +126,17 @@ const ProductDetail: React.FC<IProduct> = ({
                 max={stock}
                 value={quantity}
                 onChange={handleQuantityChange}
-                className="w-20 text-center bg-gray-800 text-white border border-yellow-600 rounded-lg py-2 text-lg"
+                disabled={stock === 0}
+                className="w-20 text-center bg-gray-800 text-white border border-yellow-600 rounded-lg py-2 text-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
               />
               <button
-                className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white rounded-lg transition-all shadow-md flex items-center"
                 onClick={handleAddToCart}
+                disabled={stock === 0}
+                className={`p-3 rounded-lg transition-all shadow-md flex items-center text-white
+        ${stock > 0
+                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500'
+                    : 'bg-gray-300 cursor-not-allowed opacity-50'
+                  }`}
               >
                 <ShoppingCart className="w-5 h-5" />
                 <span className="ml-2 text-sm font-medium">Agregar</span>

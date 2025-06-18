@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { Sparkles, Gift, Clock, X, Star, Zap } from "lucide-react"
-
+import { useRouter } from "next/navigation"
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1589254065878-42c9da997008?w=800&auto=format&fit=crop&q=80"
 
 const offerData = {
@@ -57,12 +57,13 @@ export const SeasonalOffer = () => {
     sessionStorage.setItem(`offer-${offerData.id}-closed`, "true")
   }
 
-  const handleAccept = () => {
-    setIsVisible(false)
-    localStorage.setItem(`offer-${offerData.id}`, new Date().toDateString())
-    window.location.href = offerData.redirectTo
-  }
+ const router = useRouter();
 
+const handleAccept = () => {
+  setIsVisible(false);
+  localStorage.setItem(`offer-${offerData.id}`, new Date().toDateString());
+  router.push('/products?category=Specials');
+}
   if (!isVisible) return null
 
   return (

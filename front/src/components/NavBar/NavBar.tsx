@@ -34,6 +34,8 @@ export default function Navbar() {
     { name: "Velas", label: "Velas Rituales" },
     { name: "Libros", label: "Libros Místicos" },
     { name: "Estatuillas", label: "Estatuillas" },
+    { name: "Quemantes", label: "Quemantes" },
+    { name: "Specials", label: "Specials" },
   ]
 
   // Cargar los productos desde el helper al montar el componente
