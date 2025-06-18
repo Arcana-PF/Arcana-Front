@@ -10,7 +10,7 @@ interface ToggleProductVisibilityButtonProps {
     productId: string;
     isActive: boolean;
     token: string;
-    onToggle?: () => void; 
+    onToggle?: () => void;
 }
 
 const ToggleProductVisibilityButton: React.FC<ToggleProductVisibilityButtonProps> = ({
@@ -36,13 +36,12 @@ const ToggleProductVisibilityButton: React.FC<ToggleProductVisibilityButtonProps
 
             onToggle?.(); // Llama a función externa si se proporciona
         } catch (error) {
+            const message = error instanceof Error ? error.message : "Hubo un problema actualizando la visibilidad del producto.";
             Swal.fire({
                 icon: "error",
                 title: "Error",
-                text: "Hubo un problema actualizando la visibilidad del producto.",
+                text: message,
             });
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -51,8 +50,8 @@ const ToggleProductVisibilityButton: React.FC<ToggleProductVisibilityButtonProps
             onClick={handleClick}
             disabled={loading}
             className={`flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition ${isActive
-                    ? "bg-red-600 hover:bg-red-700 text-white"
-                    : "bg-green-600 hover:bg-green-700 text-white"
+                ? "bg-red-600 hover:bg-red-700 text-white"
+                : "bg-green-600 hover:bg-green-700 text-white"
                 } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
             {isActive ? <EyeOff size={18} /> : <Eye size={18} />}

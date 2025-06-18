@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { IProduct } from "@/types";
 import { useCart } from "@/context/CartContext";
-import { Heart, ShoppingCart, Star } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import Swal from "sweetalert2";
 import Rating from "../Rating/Rating";
 

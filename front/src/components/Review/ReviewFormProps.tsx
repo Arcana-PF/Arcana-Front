@@ -76,10 +76,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       Swal.fire("¡Éxito!", "Tu reseña ha sido enviada correctamente.", "success");
       // Aquí podrías actualizar el estado para reflejar que ya existe una reseña,
       // por ejemplo: setExistingReview({ rating, comment }); o redirigir.
-    } catch (error: any) {
-      Swal.fire("Error", error.message || "Error al enviar la reseña.", "error");
-    } finally {
-      setSubmitting(false);
+    } catch (error: unknown) {
+      let message = "Error al enviar la reseña.";
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      Swal.fire("Error", message, "error");
     }
   };
 

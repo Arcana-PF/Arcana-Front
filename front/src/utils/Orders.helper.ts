@@ -1,3 +1,5 @@
+import { ICart } from "@/types";
+
 const APIURL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getOrders(token: string) {
@@ -64,8 +66,7 @@ export async function getOrder(orderId: string, token: string) {
     };
   }
 }
-
-export async function createPaypalOrder(cart: any, token: string) {
+export async function createPaypalOrder(cart: ICart, token: string) {
   if (!APIURL) {
     console.error("API URL is not defined");
     return { success: false, error: "API URL missing" };
