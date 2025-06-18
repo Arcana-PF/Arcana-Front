@@ -141,9 +141,18 @@ const Card: React.FC<ICardProps> = ({
         )}
 
         {/* Panel de rating */}
+<<<<<<< HEAD
         <div className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 rounded-full">
           <Rating value={rating} />
         </div>
+=======
+        {rating && (
+          <div className="absolute bottom-3 left-3 flex items-center bg-white/90 px-2 py-1 rounded-full">
+            <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
+            <span className="text-xs font-medium ml-1">{rating.toFixed(1)}</span>
+          </div>
+        )}
+>>>>>>> develop
 
         {/* Botón de favoritos */}
         <button
