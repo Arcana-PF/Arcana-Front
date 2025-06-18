@@ -1,19 +1,18 @@
 const APIURL = process.env.NEXT_PUBLIC_API_URL;
 
-export async function createOrder(products: number[], token: string) {
+export async function getOrders(token: string) {
   if (!APIURL) {
     console.error("API URL is not defined");
-    return { success: false, error: "API URL missing" }; // ✅ No detiene la ejecución global
+    return { success: false, error: "API URL missing" };
   }
 
   try {
     const response = await fetch(`${APIURL}/orders`, {
-      method: "POST",
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // ✅ Usa formato de autorización estándar
+        Authorization: `Bearer ${token}`, // Usamos el formato Bearer
       },
-      body: JSON.stringify({ products }),
     });
 
     if (!response.ok) {
@@ -22,34 +21,164 @@ export async function createOrder(products: number[], token: string) {
       return { success: false, error: errorMessage };
     }
 
-    return { success: true }; // ✅ Retorna resultado en lugar de usar `alert()`
-  } catch (error) {
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Unexpected error occurred" };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error occurred",
+    };
   }
 }
 
-export async function getOrders(token: string) {
+export async function getOrder(orderId: string, token: string) {
+  if (!APIURL) {
+    console.error("API URL is not defined");
+    return { success: false, error: "API URL missing" };
+  }
+
   try {
-    const response = await fetch(`${APIURL}/orders`, {
-      method: 'GET',
+    const response = await fetch(`${APIURL}/orders/${orderId}`, {
+      method: "GET",
       headers: {
-        'Content-type': 'application/json',
-        Authorization: token,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     });
 
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+      const errorMessage = await response.json().catch(() => "Unknown error");
+      console.error(`Error ${response.status}:`, errorMessage);
+      return { success: false, error: errorMessage };
+    }
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: unknown) {
+    console.error("Unexpected error:", error);
+    return {
+      success: false,
+      error: error instanceof Error
+        ? error.message
+        : "Unexpected error occurred",
+    };
+  }
+}
+
+export async function createPaypalOrder(cart: any, token: string) {
+  if (!APIURL) {
+    console.error("API URL is not defined");
+    return { success: false, error: "API URL missing" };
+  }
+
+  try {
+    const response = await fetch(`${APIURL}/orders/paypal/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(cart),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.json().catch(() => "Unknown error");
+      console.error(`Error ${response.status}:`, errorMessage);
+      return { success: false, error: errorMessage };
     }
 
-    return await response.json();
+    const data = await response.json();
+    // Supongamos que el endpoint retorna { orderId: string }
+    return { success: true, orderId: data.orderId };
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error(error.message);
-      throw new Error(error.message);
-    } else {
-      throw new Error('Unexpected error occurred');
+    console.error("Unexpected error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error occurred",
+    };
+  }
+}
+
+
+export async function initiatePaypalOrder(orderId: string, token: string) {
+  if (!APIURL) {
+    console.error("API URL is not defined");
+    return { success: false, error: "API URL missing" };
+  }
+
+  try {
+    const response = await fetch(`${APIURL}/orders/paypal/initiate/${orderId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.json().catch(() => "Unknown error");
+      console.error(`Error ${response.status}:`, errorMessage);
+      return { success: false, error: errorMessage };
     }
+
+    // Parseamos la respuesta JSON.
+    const data = await response.json().catch(() => ({}));
+    // Buscamos redirectUrl ya sea en data o en data.data.
+    const redirectUrl = data.redirectUrl || (data.data && data.data.redirectUrl);
+    if (!redirectUrl) {
+      console.error("redirectUrl not found in response data:", data);
+      return { success: false, error: "redirectUrl not found in response" };
+    }
+
+    return { success: true, redirectUrl };
+  } catch (error: unknown) {
+    console.error("Unexpected error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected error occurred",
+    };
+  }
+}
+
+
+export async function capturePaypalOrder(
+  orderId: string,
+  localOrderId: string,
+  token: string
+) {
+  if (!APIURL) {
+    console.error("API URL is not defined");
+    return { success: false, error: "API URL missing" };
+  }
+
+  const payload = { orderId, localOrderId };
+
+  try {
+    const response = await fetch(`${APIURL}/orders/paypal/capture`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.json().catch(() => "Unknown error");
+      console.error(`Error ${response.status}:`, errorMessage);
+      return { success: false, error: errorMessage };
+    }
+
+    const data = await response.json().catch(() => ({}));
+    return { success: true, data };
+  } catch (error: unknown) {
+    console.error("Unexpected error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unexpected error occurred",
+    };
   }
 }

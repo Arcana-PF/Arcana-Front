@@ -50,7 +50,7 @@ export async function updateCartItemQuantity(itemId: string, quantity: number, t
 /** Elimina un producto del carrito mediante DELETE */
 export async function deleteCartItem(itemId: string, token: string): Promise<boolean> {
   try {
-    const response = await fetch(`${APIURL}/cart/item/${itemId}`, {
+    const response = await fetch(`${APIURL}/cart/items/${itemId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

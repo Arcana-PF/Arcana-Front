@@ -4,35 +4,14 @@ import { useEffect, useState } from "react"
 import { useFormik } from "formik"
 import Cookies from "js-cookie"
 import { Sparkles } from "lucide-react"
+import { ApiResponse, ICategory, ProductFormValues } from "@/types"
 
-interface Category {
-  id: string
-  name: string
-  isActive: boolean
-}
-
-interface ProductFormValues {
-  name: string
-  description: string
-  price: string
-  stock: string
-  img: File | null
-  selectedCategories: string[]
-  newCategories: string
-}
-
-interface ApiResponse {
-  id?: string
-  product?: {
-    id: string
-  }
-}
 
 const ProductForm = () => {
   const [uploading, setUploading] = useState<boolean>(false)
   const [message, setMessage] = useState<string>("")
   const [errors, setErrors] = useState<string[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<ICategory[]>([])
 
 // 🔥 FIX: Parsear correctamente la cookie
 const userSession = Cookies.get("userSession")
@@ -54,7 +33,7 @@ useEffect(() => {
 
       if (!Array.isArray(data)) throw new Error("La respuesta no es un array")
 
-      const loadedCategories = data.filter((item): item is Category =>
+      const loadedCategories = data.filter((item): item is ICategory =>
         typeof item.id === "string" &&
         typeof item.name === "string" &&
         typeof item.isActive === "boolean"
