@@ -16,7 +16,7 @@ const ProductDetail: React.FC<IProduct> = ({
   stock,
   price,
   categories,
-  rating = 4.5,
+  rating,
   onAddToFavorites,
 }) => {
   const { userData } = useAuth();
@@ -80,7 +80,7 @@ const ProductDetail: React.FC<IProduct> = ({
         {/* Producto agotado: visible para todos */}
         {stock === 0 && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow z-10">
-            Producto Agotado
+            Producto Agotado espera a que llegue el nuevo stock
           </div>
         )}
 
@@ -117,6 +117,7 @@ const ProductDetail: React.FC<IProduct> = ({
           </div>
 
           {/* Selector de cantidad y botón para agregar al carrito */}
+          {/* Selector de cantidad y botón para agregar al carrito */}
           {!userData?.user.isAdmin && (
             <div className="flex items-center gap-6">
               <input
@@ -125,11 +126,17 @@ const ProductDetail: React.FC<IProduct> = ({
                 max={stock}
                 value={quantity}
                 onChange={handleQuantityChange}
-                className="w-20 text-center bg-gray-800 text-white border border-yellow-600 rounded-lg py-2 text-lg"
+                disabled={stock === 0}
+                className="w-20 text-center bg-gray-800 text-white border border-yellow-600 rounded-lg py-2 text-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
               />
               <button
-                className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white rounded-lg transition-all shadow-md flex items-center"
                 onClick={handleAddToCart}
+                disabled={stock === 0}
+                className={`p-3 rounded-lg transition-all shadow-md flex items-center text-white
+        ${stock > 0
+                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500'
+                    : 'bg-gray-300 cursor-not-allowed opacity-50'
+                  }`}
               >
                 <ShoppingCart className="w-5 h-5" />
                 <span className="ml-2 text-sm font-medium">Agregar</span>
