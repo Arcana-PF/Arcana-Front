@@ -1,3 +1,5 @@
+'use client';
+import React from "react";
 import { IProduct } from "@/types";
 import { Heart, ShoppingCart, Star } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -16,7 +18,7 @@ const Card: React.FC<ICardProps> = ({
   description, 
   price, 
   imgUrl, 
-  category,
+  categories,
   stock,
   rating = 4.5,
   onAddToFavorites,
@@ -24,7 +26,7 @@ const Card: React.FC<ICardProps> = ({
 }) => {
   const { userData } = useAuth();
   const router = useRouter();
-
+  const category = categories.length > 0 ? categories[0].name : "Sin categoría"; // Extrae la primera categoría
   const handleCardClick = (e: React.MouseEvent) => {
     // Solo navega si el click no fue en el botón de carrito/favoritos
     if (!(e.target as HTMLElement).closest('button')) {
@@ -85,8 +87,14 @@ const Card: React.FC<ICardProps> = ({
         return;
       }
       cart.push({ 
-        id, name, imgUrl, description, 
-        price, category, stock, 
+        id, 
+        name, 
+        imgUrl, 
+        description, 
+        price, 
+        stock, 
+        isActive: true, 
+        categories, 
         quantity: 1 
       });
     }
@@ -170,6 +178,7 @@ const Card: React.FC<ICardProps> = ({
             </p>
           </div>
           
+          {!userData?.user.isAdmin &&(
           <button 
             className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white rounded-lg transition-all shadow-md flex items-center justify-center z-20"
             onClick={handleAddToCart}
@@ -177,6 +186,7 @@ const Card: React.FC<ICardProps> = ({
             <ShoppingCart className="w-5 h-5 cursor-pointer" />
             <span className="ml-2 text-sm font-medium cursor-pointer">Agregar</span>
           </button>
+          )}
         </div>
       </div>
     </div>

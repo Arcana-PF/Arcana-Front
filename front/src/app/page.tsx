@@ -1,10 +1,10 @@
 'use client'; 
 
 import { useState } from 'react';
-import CardList from "@/components/CardList"
-import ComponentSlider from "@/components/Slider/SliderComponent"
-import { Sparkles, Moon, Star, Eye, Heart, Shield, ArrowRight, Mail, Award, Users } from "lucide-react"
-import Link from "next/link"
+import CardList from "@/components/CardList";
+import ComponentSlider from "@/components/Slider/SliderComponent";
+import { Sparkles, Moon, Star, Eye, Heart, Shield, ArrowRight, Mail, Award, Users } from "lucide-react";
+import Link from "next/link";
 
 
 export default function Home() {

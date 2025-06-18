@@ -7,7 +7,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { SeasonalOffer } from "@/components/Notification/SeasonOff";
 import { Inter } from 'next/font/google';
-
+import ChatBotComponent from "@/components/Chatbot/ChatbotComponent";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,16 +23,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body className={`${inter.className} bg-gradient-to-b from-gray-100 to-gray-300 min-h-screen flex flex-col items-center justify-center antialiased`}>
-        <CartProvider>
-        <AuthProvider>  
-        <NavBar />
-        <SeasonalOffer />
-        {children}
-        <Footer />
+        <AuthProvider>  {/* ✅ Primero autenticación */}
+          <CartProvider> {/* ✅ Luego el carrito, que puede depender del usuario */}
+            <NavBar />
+            <SeasonalOffer />
+            {children}
+            <ChatBotComponent />
+            <Footer />
+          </CartProvider>
         </AuthProvider>
-        </CartProvider>
       </body>
-      
     </html>
   );
 }
