@@ -56,137 +56,144 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              {
-                icon: <Moon className="w-8 h-8" />,
-                title: "Cristales & Gemas",
-                description: "Piedras naturales con propiedades únicas",
-                gradient: "from-purple-600 to-indigo-600",
-              },
-              {
-                icon: <Star className="w-8 h-8" />,
-                title: "Tarot & Oráculos",
-                description: "Barajas profesionales y herramientas místicas",
-                gradient: "from-indigo-600 to-blue-600",
-              },
-              {
-                icon: <Eye className="w-8 h-8" />,
-                title: "Aromas Sagrados",
-                description: "Inciensos, velas y aceites esenciales",
-                gradient: "from-blue-600 to-teal-600",
-              },
-            ].map((category, index) => (
-              <div
-                key={index}
-                className="group bg-gray-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-700 hover:-translate-y-1"
-              >
-                <div
-                  className={`w-16 h-16 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white mb-6 group-hover:scale-105 transition-transform duration-300`}
-                >
-                  {category.icon}
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">{category.title}</h3>
-                <p className="text-gray-400 mb-4 leading-relaxed">{category.description}</p>
-                <div className="flex items-center text-purple-400 font-medium group-hover:text-yellow-400 transition-colors duration-300">
-                  <span className="text-sm">Explorar</span>
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300 cursor-pointer" />
-                </div>
+          
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        {[
+          {
+            icon: <Moon className="w-8 h-8" />,
+            title: "Cristales & Gemas",
+            description: "Piedras naturales con propiedades únicas",
+            gradient: "from-purple-600 to-indigo-600",
+            href: "/products?category=Cristales",
+          },
+          {
+            icon: <Star className="w-8 h-8" />,
+            title: "Tarot & Oráculos",
+            description: "Barajas profesionales y herramientas místicas",
+            gradient: "from-indigo-600 to-blue-600",
+            href: "/products?category=Tarot",
+          },
+          {
+            icon: <Eye className="w-8 h-8" />,
+            title: "Aromas Sagrados",
+            description: "Inciensos, velas y aceites esenciales",
+            gradient: "from-blue-600 to-teal-600",
+            href: "/products?category=Velas",
+          },
+        ].map((category, index) => (
+          <Link
+            key={index}
+            href={category.href}
+            className="group block bg-gray-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-700 hover:-translate-y-1"
+          >
+            <div
+              className={`w-16 h-16 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white mb-6 group-hover:scale-105 transition-transform duration-300`}
+            >
+              {category.icon}
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3">{category.title}</h3>
+            <p className="text-gray-400 mb-4 leading-relaxed">{category.description}</p>
+            <div className="flex items-center text-purple-400 font-medium group-hover:text-yellow-400 transition-colors duration-300">
+              <span className="text-sm">Explorar</span>
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+            </div>
+          </Link>
+        ))}
+      </div>
+
               </div>
-            ))}
+            </section>
+
+            {/* Productos destacados */}
+      <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-screen-xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium mb-4 border border-purple-200">
+              <Star className="w-4 h-4 mr-2 text-purple-600" />
+              Productos Destacados
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Seleccionados del mes</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Recorre nuestro catalogo completo y descubre todos nuestros productos
+            </p>
+          </div>
+
+              <CardList 
+              categories={["Velas"]}
+              sort="Precio: Menor a Mayor"
+              page={currentPage}
+              onTotalPagesChange={setTotalPages}
+              itemsPerPage={4}
+            />
+
+            {/* Navegación de páginas */}
+            <div className="flex gap-2 justify-center my-8">
+              {Array.from({length: totalPages}, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`cursor-pointer px-4 py-2 rounded ${currentPage === i + 1 ? 'bg-purple-600 text-white' : 'bg-gray-200'} `}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+
+          <div className="text-center mt-12">
+            <Link href="/products">
+              <button className="cursor-pointer inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-300 shadow-md hover:shadow-lg">
+                Explorar Catálogo Completo
+                <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1 cursor-pointer" />
+              </button>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Productos destacados */}
-<section className="py-20 bg-gradient-to-b from-gray-50 to-white">
-  <div className="max-w-screen-xl mx-auto px-4">
-    <div className="text-center mb-16">
-      <div className="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium mb-4 border border-purple-200">
-        <Star className="w-4 h-4 mr-2 text-purple-600" />
-        Productos Destacados
-      </div>
-      <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Seleccionados del mes</h2>
-      <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-        Recorre nuestro catalogo completo y descubre todos nuestros productos
-      </p>
-    </div>
-
-        <CardList 
-        categories={["Velas"]}
-        sort="Precio: Menor a Mayor"
-        page={currentPage}
-        onTotalPagesChange={setTotalPages}
-        itemsPerPage={4}
-      />
-
-      {/* Navegación de páginas */}
-      <div className="flex gap-2 justify-center my-8">
-        {Array.from({length: totalPages}, (_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            className={`cursor-pointer px-4 py-2 rounded ${currentPage === i + 1 ? 'bg-purple-600 text-white' : 'bg-gray-200'} `}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
-
-    <div className="text-center mt-12">
-      <Link href="/products">
-        <button className="cursor-pointer inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-300 shadow-md hover:shadow-lg">
-          Explorar Catálogo Completo
-          <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1 cursor-pointer" />
-        </button>
-      </Link>
-    </div>
-  </div>
-</section>
-
-      {/* Sobre Arcana*/}
-      <section className="py-20 bg-gradient-to-br from-gray-900 to-purple-900 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0 bg-[url('/images/pattern.svg')] bg-repeat opacity-10"></div>
-        </div>
-        <div className="relative max-w-4xl mx-auto px-4 text-center">
-          <div className="inline-flex items-center px-4 py-2 bg-white/10 text-white rounded-full text-sm font-medium mb-6 border border-white/20">
-            <Heart className="w-4 h-4 mr-2" />
-            Nuestra Historia
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Sobre Arcana</h2>
-          <p className="text-lg text-purple-100 leading-relaxed mb-12 max-w-3xl mx-auto">
-            Desde hace más de una década, nos dedicamos a ofrecer productos auténticos para quienes buscan conectar con
-            su espiritualidad. Cada pieza es seleccionada con cuidado y respeto por su origen y significado.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <Award className="w-6 h-6" />,
-                title: "Autenticidad",
-                description: "Productos genuinos y verificados por expertos",
-              },
-              {
-                icon: <Shield className="w-6 h-6" />,
-                title: "Experiencia",
-                description: "Más de 12 años sirviendo a la comunidad",
-              },
-              {
-                icon: <Users className="w-6 h-6" />,
-                title: "Comunidad",
-                description: "Miles de clientes satisfechos nos respaldan",
-              },
-            ].map((value, index) => (
-              <div key={index} className="text-center">
-                <div className="w-14 h-14 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-4 border border-yellow-500/30">
-                  <div className="text-yellow-400">{value.icon}</div>
-                </div>
-                <h3 className="font-bold text-white mb-3">{value.title}</h3>
-                <p className="text-sm text-purple-200 leading-relaxed">{value.description}</p>
+            {/* Sobre Arcana*/}
+            <section className="py-20 bg-gradient-to-br from-gray-900 to-purple-900 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute inset-0 bg-[url('/images/pattern.svg')] bg-repeat opacity-10"></div>
               </div>
-            ))}
-          </div>
+              <div className="relative max-w-4xl mx-auto px-4 text-center">
+                <div className="inline-flex items-center px-4 py-2 bg-white/10 text-white rounded-full text-sm font-medium mb-6 border border-white/20">
+                  <Heart className="w-4 h-4 mr-2" />
+                  Nuestra Historia
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Sobre Arcana</h2>
+                <p className="text-lg text-purple-100 leading-relaxed mb-12 max-w-3xl mx-auto">
+                  Desde hace más de una década, nos dedicamos a ofrecer productos auténticos para quienes buscan conectar con
+                  su espiritualidad. Cada pieza es seleccionada con cuidado y respeto por su origen y significado.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {[
+                    {
+                      icon: <Award className="w-6 h-6" />,
+                      title: "Autenticidad",
+                      description: "Productos genuinos y verificados por expertos",
+                    },
+                    {
+                      icon: <Shield className="w-6 h-6" />,
+                      title: "Experiencia",
+                      description: "Más de 12 años sirviendo a la comunidad",
+                    },
+                    {
+                      icon: <Users className="w-6 h-6" />,
+                      title: "Comunidad",
+                      description: "Miles de clientes satisfechos nos respaldan",
+                    },
+                  ].map((value, index) => (
+                    <div key={index} className="text-center">
+                      <div className="w-14 h-14 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-4 border border-yellow-500/30">
+                        <div className="text-yellow-400">{value.icon}</div>
+                      </div>
+                      <h3 className="font-bold text-white mb-3">{value.title}</h3>
+                      <p className="text-sm text-purple-200 leading-relaxed">{value.description}</p>
+                    </div>
+                  ))}
+                </div>
         </div>
       </section>
 
