@@ -10,6 +10,7 @@ import React from "react"
 import Link from "next/link"
 import Swal from "sweetalert2"
 import Cookies from "js-cookie"
+import LoginWithAuth0Button from "@/utils/Loginauth0"
 
 const LoginComponent = () => {
   const router = useRouter()
@@ -40,6 +41,10 @@ const LoginComponent = () => {
             </div>
             <p className="text-gray-300 text-sm">Ingresar al Círculo Arcano</p>
           </div>
+          <div className="text-center mt-6 pt-4 border-t border-yellow-500/20">
+          <LoginWithAuth0Button />
+          </div>
+
 
           <Formik
         initialValues={{ email: "", password: "" }}

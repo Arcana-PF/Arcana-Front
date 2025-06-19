@@ -13,6 +13,8 @@
     "postinstall": "npm rebuild lightningcss --update-binary"
   },
   "dependencies": {
+    "@auth0/auth0-react": "^2.3.0",
+    "@auth0/nextjs-auth0": "^4.6.1",
     "amqplib": "^0.10.6",
     "formik": "^2.4.6",
     "js-cookie": "^3.0.5",

@@ -1,49 +1,32 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { auth0 } from './app/lib/auth0';
 
-export function middleware(request: NextRequest) {
-  const { pathname, origin } = request.nextUrl;
+export async function middleware(request: NextRequest) {
+  const response = await auth0.middleware(request);
+  const session = await auth0.getSession(request);
+  const user = session?.user;
 
-  const userSessionCookie = request.cookies.get('userSession')?.value;
-  const isAuthenticated = Boolean(userSessionCookie);
+  const { pathname } = request.nextUrl;
 
-  // Convertir la cookie a objeto si es JSON
-  let userData;
-  try {
-    userData = userSessionCookie ? JSON.parse(userSessionCookie) : null;
-  } catch (error) {
-    console.error("Error al parsear la cookie userSession:", error);
+  // Redirigir a /profileadmin si el usuario es admin y accede a /profile
+  if (pathname === '/profile' && user?.isAdmin) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/profileadmin';
+    return NextResponse.redirect(url);
   }
 
-  const isAdmin = Boolean(userData?.isAdmin);
-
-  const protectedRoutes = ['/profile', '/cart', '/profile/orders'];
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-
-  const authRoutes = ['/login', '/register'];
-  const isAuthRoute = authRoutes.includes(pathname);
-
-
-  function redirectTo(path: string) {
-    return NextResponse.redirect(new URL(path, origin));
+  // Redirigir a /profile si el usuario NO es admin y accede a /profileadmin
+  if (pathname === '/profileadmin' && !user?.isAdmin) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/profile';
+    return NextResponse.redirect(url);
   }
 
-  if (isProtectedRoute && !isAuthenticated) {
-    return redirectTo('/login');
-  }
-
-  if (isAuthRoute && isAuthenticated) {
-    return redirectTo('/');
-  }
-
-  // Redirigir admins a su perfil exclusivo
-  if (pathname === '/profile' && isAdmin) {
-    return redirectTo('/profileadmin');
-  }
-
-  // Redirigir a la página de inicio si se accede a /profileadmin sin ser admin
-  if (pathname === '/profileadmin' && !isAdmin) {
-    return redirectTo('/profile');
-  }
-
-  return NextResponse.next();
+  return response;
 }
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|login|register|public).*)',
+  ],
+};
