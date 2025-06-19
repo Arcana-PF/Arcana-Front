@@ -1,32 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth0 } from './app/lib/auth0';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { auth0 } from '../src/app/lib/auth0';
 
 export async function middleware(request: NextRequest) {
-  const response = await auth0.middleware(request);
+  const res = await auth0.middleware(request);
+  const { pathname, origin } = request.nextUrl;
+
   const session = await auth0.getSession(request);
   const user = session?.user;
+  const isAuthenticated = Boolean(user);
 
-  const { pathname } = request.nextUrl;
+  const protectedRoutes = ['/profile', '/cart', '/profile/orders'];
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
-  // Redirigir a /profileadmin si el usuario es admin y accede a /profile
-  if (pathname === '/profile' && user?.isAdmin) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/profileadmin';
-    return NextResponse.redirect(url);
+  const authRoutes = ['/login', '/register'];
+  const isAuthRoute = authRoutes.includes(pathname);
+
+  const isAdmin = user?.role === 'admin'; // Asegúrate de incluir `role` en los claims del token
+
+  const redirectTo = (path: string) => NextResponse.redirect(new URL(path, origin));
+
+  if (isProtectedRoute && !isAuthenticated) {
+    return redirectTo('/login');
   }
 
-  // Redirigir a /profile si el usuario NO es admin y accede a /profileadmin
-  if (pathname === '/profileadmin' && !user?.isAdmin) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/profile';
-    return NextResponse.redirect(url);
+  if (isAuthRoute && isAuthenticated) {
+    return redirectTo('/');
   }
 
-  return response;
+  if (pathname === '/profile' && isAdmin) {
+    return redirectTo('/profileadmin');
+  }
+
+  if (pathname === '/profileadmin' && !isAdmin) {
+    return redirectTo('/profile');
+  }
+
+  return res;
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|login|register|public).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
   ],
 };
