@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import Link from "next/link"
+import { useCart } from "@/context/CartContext"
 import { useAuth } from "@/context/AuthContext"
 import { getProductsDB } from "@/utils/product.helper"
 import type { IProduct } from "@/types"
@@ -19,9 +20,9 @@ export default function Navbar() {
   const [categoriesOpen, setCategoriesOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const categoriesRef = useRef<HTMLDivElement>(null)
-
   const [allProducts, setAllProducts] = useState<IProduct[]>([])
   const [loadingProducts, setLoadingProducts] = useState(false)
+  const { cart, isCartReady, refreshCart } = useCart()
 
   // Categorías disponibles
   const categories = [
@@ -37,6 +38,52 @@ export default function Navbar() {
     { name: "Quemantes", label: "Quemantes" },
     { name: "Specials", label: "Specials" },
   ]
+
+  // contador dinámico, solo cuando el carrito ya cargó y no es admin
+  const itemCount = useMemo(() => {
+    if (!isCartReady || !userData?.user?.id || userData.user.isAdmin) {
+      return 0
+    }
+    return cart.items.length
+  }, [isCartReady, userData?.user?.id, userData?.user?.isAdmin, cart.items.length])
+
+  // Debug effect - puedes remover esto después de verificar que funciona
+  useEffect(() => {
+    console.log("🛒 NavBar - Cart Status:", {
+      isCartReady,
+      userLoggedIn: !!userData?.user?.id,
+      userId: userData?.user?.id,
+      isAdmin: userData?.user?.isAdmin,
+      itemCount,
+      cartItemsLength: cart.items.length,
+      cartItems: cart.items.map((item) => ({ id: item.id, name: item.product.name, quantity: item.quantity })),
+    })
+  }, [isCartReady, userData?.user?.id, userData?.user?.isAdmin, itemCount, cart.items])
+
+  // Efecto para refrescar el carrito cuando el componente se monta
+  useEffect(() => {
+    if (userData?.user?.id && !userData.user.isAdmin && refreshCart) {
+      console.log("🔄 Refreshing cart for user:", userData.user.id)
+      refreshCart()
+    }
+  }, [userData?.user?.id, userData?.user?.isAdmin, refreshCart])
+
+  // Efecto para escuchar cambios en el carrito
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      console.log("📢 Cart update event received")
+      if (refreshCart) {
+        refreshCart()
+      }
+    }
+
+    // Escuchar evento personalizado para actualizaciones del carrito
+    window.addEventListener("cartUpdated", handleCartUpdate)
+
+    return () => {
+      window.removeEventListener("cartUpdated", handleCartUpdate)
+    }
+  }, [refreshCart])
 
   // Cargar los productos desde el helper al montar el componente
   useEffect(() => {
@@ -59,21 +106,21 @@ export default function Navbar() {
   }, [])
 
   // Cerrar dropdowns al hacer click fuera
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setShowResults(false);
-        setCategoriesOpen(false);
+        setShowResults(false)
+        setCategoriesOpen(false)
       }
     }
 
-    document.addEventListener("pointerdown", handleClickOutside);
+    document.addEventListener("pointerdown", handleClickOutside)
     return () => {
-      document.removeEventListener("pointerdown", handleClickOutside);
-    };
-  }, []);
+      document.removeEventListener("pointerdown", handleClickOutside)
+    }
+  }, [])
 
   // Filtrar productos según el término de búsqueda
   const filteredProducts = allProducts.filter((product) =>
@@ -121,6 +168,7 @@ export default function Navbar() {
 
         // Eliminar datos del localStorage
         localStorage.removeItem("userSession")
+        localStorage.removeItem("cart")
         // Borrar todas las cookies accesibles
 
         Cookies.remove("userSession")
@@ -161,7 +209,7 @@ export default function Navbar() {
 
   return (
     <nav className="bg-gradient-to-r from-purple-900 via-purple-800 to-purple-900 text-white w-full sticky top-0 z-50 shadow-lg border-b border-yellow-500/20">
-      <div className="container mx-auto px-4 py-2">
+      <div className="container mx-auto px-4 py-2" ref={containerRef}>
         {/* Primera fila - Logo, búsqueda y acciones */}
         <div className="flex items-center justify-between py-2">
           {/* Logo */}
@@ -205,18 +253,31 @@ export default function Navbar() {
             {userData ? (
               <>
                 {/* Solo mostrar carrito si NO es admin */}
-                {!userData?.user?.isAdmin && (
+                {!userData.user.isAdmin && (
                   <button
                     onClick={handleCartClick}
                     className="p-2 hover:text-yellow-400 transition-colors relative cursor-pointer"
-                    aria-label="Carrito"
+                    aria-label={`Carrito (${itemCount} items)`}
                   >
                     <ShoppingCart className="w-5 h-5" />
-                    <span className="absolute -top-1 -right-1 bg-yellow-500 text-black text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                      0
-                    </span>
+                    {itemCount > 0 && (
+                      <span
+                        className="
+                          absolute -top-1 -right-1
+                          bg-yellow-500 text-black text-xs
+                          rounded-full w-4 h-4
+                          flex items-center justify-center
+                          animate-pulse
+                          font-bold
+                        "
+                        key={`cart-${itemCount}`}
+                      >
+                        {itemCount}
+                      </span>
+                    )}
                   </button>
                 )}
+
                 <Link
                   href={Boolean(userData?.user?.isAdmin) ? "/profileadmin" : "/profile"}
                   className="p-2 hover:text-yellow-400 transition-colors"
@@ -385,18 +446,27 @@ export default function Navbar() {
                     <UserIcon className="w-4 h-4" />
                     Mi Perfil
                   </Link>
-                  
-                  { !userData?.user?.isAdmin &&(
+
+                  {userData && !userData.user.isAdmin && (
                     <button
-                    onClick={() => {
-                      handleCartClick()
-                      setMenuOpen(false)
-                    }}
-                    className="py-2 hover:text-yellow-400 transition-colors border-b border-yellow-500/10 flex items-center gap-2 text-left"
-                  >
-                    <ShoppingCart className="w-4 h-4" />
-                    Carrito
-                  </button>)}
+                      onClick={() => {
+                        handleCartClick()
+                        setMenuOpen(false)
+                      }}
+                      className="py-2 hover:text-yellow-400 transition-colors border-b border-yellow-500/10 flex items-center gap-2"
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      <span>Carrito</span>
+                      {itemCount > 0 && (
+                        <span
+                          className="ml-auto bg-yellow-500 text-black text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse font-bold"
+                          key={`mobile-cart-${itemCount}`}
+                        >
+                          {itemCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
 
                   <button
                     onClick={() => {
