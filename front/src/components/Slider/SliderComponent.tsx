@@ -24,7 +24,7 @@ const slides: Slide[] = [
     description: 'Descubre el poder del tarot y otras herramientas',
     imageUrl: '/slide4.png',
     ctaText: 'Comprar ahora',
-    ctaLink: '/ofertas',
+    ctaLink: '/products/918f6eee-1fec-4ca1-9e42-b97f3a9b798b',
   },
   {
     id: 2,
@@ -32,7 +32,7 @@ const slides: Slide[] = [
     description: 'Hasta 40% de descuento en quemantes',
     imageUrl: '/slide1.png',
     ctaText: 'Ver ofertas',
-    ctaLink: '/ofertas',
+    ctaLink: '/products?category=Specials',
   },
   {
     id: 3,
@@ -40,7 +40,7 @@ const slides: Slide[] = [
     description: 'Nuevos productos energéticos',
     imageUrl: '/slide9.png',
     ctaText: 'Descubrir',
-    ctaLink: '/nuevos',
+    ctaLink: '/products',
   },
   {
     id: 4,
@@ -48,7 +48,7 @@ const slides: Slide[] = [
     description: 'Cristales y piedras unicos',
     imageUrl: '/slide2.png',
     ctaText: 'Descubrir',
-    ctaLink: '/nuevos',
+    ctaLink: '/products?category=Cristales',
   },
 ];
 
