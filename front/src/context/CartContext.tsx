@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, useMemo, type ReactNode } from "react"
 import { usePathname } from "next/navigation"
-import type { ICart, IProduct, ICartUser } from "@/types"
+import type { ICart, IProduct, ICartUser, IUserSession } from "@/types"
 import { useAuth } from "@/context/AuthContext"
 import {
   addToCartHelper,
@@ -55,7 +55,7 @@ const dispatchCartUpdate = () => {
 }
 
 // Función helper para convertir el usuario de IUserSession a ICartUser
-const convertUserToCartUser = (user: any): ICartUser => {
+const convertUserToCartUser = (user: IUserSession["user"]): ICartUser => {
   return {
     id: user.id.toString(), // Convertir number a string
     name: user.name,
