@@ -47,23 +47,10 @@ export default function Navbar() {
     return cart.items.length
   }, [isCartReady, userData?.user?.id, userData?.user?.isAdmin, cart.items.length])
 
-  // Debug effect - puedes remover esto después de verificar que funciona
-  useEffect(() => {
-    console.log("🛒 NavBar - Cart Status:", {
-      isCartReady,
-      userLoggedIn: !!userData?.user?.id,
-      userId: userData?.user?.id,
-      isAdmin: userData?.user?.isAdmin,
-      itemCount,
-      cartItemsLength: cart.items.length,
-      cartItems: cart.items.map((item) => ({ id: item.id, name: item.product.name, quantity: item.quantity })),
-    })
-  }, [isCartReady, userData?.user?.id, userData?.user?.isAdmin, itemCount, cart.items])
 
   // Efecto para refrescar el carrito cuando el componente se monta
   useEffect(() => {
     if (userData?.user?.id && !userData.user.isAdmin && refreshCart) {
-      console.log("🔄 Refreshing cart for user:", userData.user.id)
       refreshCart()
     }
   }, [userData?.user?.id, userData?.user?.isAdmin, refreshCart])
@@ -71,7 +58,6 @@ export default function Navbar() {
   // Efecto para escuchar cambios en el carrito
   useEffect(() => {
     const handleCartUpdate = () => {
-      console.log("📢 Cart update event received")
       if (refreshCart) {
         refreshCart()
       }
