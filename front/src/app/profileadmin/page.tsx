@@ -15,6 +15,7 @@ const ProfileAdmin = () => {
         <div className="bg-black/80 backdrop-blur-sm rounded-xl border border-yellow-500/20 p-6 shadow-lg">
           <h2 className="text-2xl font-bold text-yellow-400 mb-4">Mi Perfil Administrador</h2>
           <PerfilAdmin />
+            
         </div>
 
         {/* Panel de Control Secundario */}
