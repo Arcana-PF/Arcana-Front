@@ -11,7 +11,7 @@ interface CreateOrderSuccess {
 
 interface CreateOrderError {
   success: false;
-  error: any;
+  error: string;
 }
 
 export type CreateOrderResult = CreateOrderSuccess | CreateOrderError;
