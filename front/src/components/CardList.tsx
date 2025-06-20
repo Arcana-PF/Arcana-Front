@@ -93,6 +93,7 @@ const CardList: React.FC<CardListProps> = ({
               {...product}
               onClick={() => router.push(`/products/${product.id}`)}
             />
+       
             {/* Muestra la nota si es admin y el producto está inactivo */}
             {userData?.user?.isAdmin && !product.isActive && (
               <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded shadow-md z-10">

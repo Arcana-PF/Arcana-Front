@@ -1,139 +1,139 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { IProduct } from "@/types";
-import { useCart } from "@/context/CartContext";
+import Rating from "../Rating/Rating";
+import ReviewForm from "@/components/Review/ReviewFormProps";
 import { ShoppingCart } from "lucide-react";
 import Swal from "sweetalert2";
-import Rating from "../Rating/Rating";
+import { useRouter } from "next/navigation";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ProductDetail: React.FC<IProduct> = ({
-  id,
-  name,
-  imgUrl,
-  description,
-  stock,
-  price,
-  categories,
-  rating,
+  id, name, imgUrl, description, stock, price, rating,
 }) => {
   const { userData } = useAuth();
-  const { addToCart } = useCart();
-  const [quantity, setQuantity] = useState(1);
+  const router = useRouter();
+  const [hasPurchased, setHasPurchased] = useState(false);
+  const [loadingPurchase, setLoadingPurchase] = useState(true);
 
-  const category = categories.length > 0 ? categories[0].name : "Sin categoría";
-
-  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newQuantity = parseInt(e.target.value, 10) || 1;
-    setQuantity(Math.max(1, Math.min(stock, newQuantity)));
-  };
-
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!userData?.token) {
-      Swal.fire({
+      return Swal.fire({
         icon: "warning",
         title: "Inicia sesión",
-        text: "Debes iniciar sesión para agregar productos al carrito.",
-      });
-      return;
+        text: "Debes iniciar sesión para agregar productos.",
+        confirmButtonText: "Ir al login",
+        confirmButtonColor: "#7e22ce",
+      }).then((r) => r.isConfirmed && router.push("/login"));
     }
 
-    addToCart({
-      id,
-      name,
-      imgUrl,
-      description,
-      stock,
-      price,
-      isActive: true,
-      categories,
-      quantity,
-    });
+    try {
+      const resp = await fetch(`${API_URL}/cart/items`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId: id, quantity: 1 }),
+      });
 
-    Swal.fire({
-      icon: "success",
-      title: "¡Producto agregado!",
-      text: `Se han agregado ${quantity} unidad/es al carrito.`,
-      confirmButtonText: "Ver carrito",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        window.location.href = "/cart";
-      }
-    });
+      if (!resp.ok) throw new Error((await resp.json()).message);
+
+      Swal.fire({
+        icon: "success",
+        title: "¡Agregado al carrito!",
+        background: "#7e22ce",
+        color: "#fff",
+        iconColor: "#facc15",
+      });
+    } catch (e: any) {
+      Swal.fire("Error", e.message || "No se pudo agregar", "error");
+    }
   };
 
+  useEffect(() => {
+    const checkIfPurchased = async () => {
+      if (!userData?.token) return setLoadingPurchase(false);
+
+      try {
+        const res = await fetch(`${API_URL}/orders/myOrders`, {
+          headers: { Authorization: `Bearer ${userData.token}` },
+        });
+
+        const orders = await res.json();
+        console.log("📦 Órdenes recibidas:", orders);
+
+        const found = orders.some((order: any) =>
+          order?.orderDetail?.items?.some(
+            (item: any) => String(item?.product?.id) === String(id)
+          )
+        );
+
+        setHasPurchased(found);
+        console.log("✅ Producto comprado:", found);
+      } catch (err) {
+        console.error("❌ Error verificando compra:", err);
+        setHasPurchased(false);
+      } finally {
+        setLoadingPurchase(false);
+      }
+    };
+
+    checkIfPurchased();
+  }, [userData?.token, id]);
+
   return (
-    <div className="max-w-lg mx-auto mt-10 bg-white border-gray-200 rounded-3xl shadow-xl overflow-hidden p-8 space-y-6">
+    <div className="max-w-lg mx-auto mt-10 bg-white rounded-3xl shadow p-8 space-y-6">
       <h1 className="text-3xl font-bold text-yellow-500">{name}</h1>
-
-      {/* Imagen del producto */}
-      <div className="relative w-full h-auto bg-gray-100">
-        <img
-          src={imgUrl}
-          alt={`${name} - ${category}`}
-          className="w-full object-cover transition-transform duration-500 hover:scale-105"
-          loading="lazy"
-        />
-
-        {/* Producto agotado: visible para todos */}
+      <div className="relative w-full bg-gray-100 rounded-xl overflow-hidden">
+        <img src={imgUrl} alt={name} className="w-full object-cover" loading="lazy" />
         {stock === 0 && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow z-10">
-            Producto Agotado espera a que llegue el nuevo stock
+          <div className="absolute top-3 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+            Agotado
           </div>
         )}
-
-        {/* Rating */}
-        <div className="absolute bottom-3 left-3 bg-white/90 px-2 py-1 rounded-full">
+        <div className="absolute bottom-3 left-3 bg-white/90 rounded-full p-2">
           <Rating value={rating} />
         </div>
-
       </div>
 
-      {/* Descripción y detalles */}
-      <div className="p-4">
-        <h3 className="font-medium text-gray-900 mb-1">{name}</h3>
-        <p className="text-sm text-gray-500 mb-3">{description}</p>
+      <p className="text-sm text-gray-500">{description}</p>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-lg font-bold text-purple-700">
-              ${price.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-            </p>
-            <p className={`text-xs ${stock > 0 ? "text-green-600" : "text-red-600"}`}>
-              {stock > 0 ? `Disponible (${stock})` : "Agotado"}
-            </p>
-          </div>
-
-          {/* Selector de cantidad y botón para agregar al carrito */}
-          {/* Selector de cantidad y botón para agregar al carrito */}
-          {!userData?.user.isAdmin && (
-            <div className="flex items-center gap-6">
-              <input
-                type="number"
-                min="1"
-                max={stock}
-                value={quantity}
-                onChange={handleQuantityChange}
-                disabled={stock === 0}
-                className="w-20 text-center bg-gray-800 text-white border border-yellow-600 rounded-lg py-2 text-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
-              />
-              <button
-                onClick={handleAddToCart}
-                disabled={stock === 0}
-                className={`p-3 rounded-lg transition-all shadow-md flex items-center text-white
-        ${stock > 0
-                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500'
-                    : 'bg-gray-300 cursor-not-allowed opacity-50'
-                  }`}
-              >
-                <ShoppingCart className="w-5 h-5" />
-                <span className="ml-2 text-sm font-medium">Agregar</span>
-              </button>
-            </div>
-          )}
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-xl font-bold text-purple-700">
+            ${price.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+          </p>
+          <p className={`text-xs ${stock > 0 ? "text-green-600" : "text-red-600"}`}>
+            {stock > 0 ? `Disponible (${stock})` : "Agotado"}
+          </p>
         </div>
+
+        {!userData?.user?.isAdmin && (
+          <button
+            onClick={handleAddToCart}
+            disabled={stock <= 0}
+            className={`p-3 rounded-lg text-white ${
+              stock > 0 ? "bg-gradient-to-r from-yellow-500 to-yellow-600 hover:opacity-80" : "bg-gray-300"
+            }`}
+          >
+            <ShoppingCart className="w-5 h-5 inline-block" />
+            <span className="ml-2">Agregar</span>
+          </button>
+        )}
       </div>
+
+      {userData?.token && !loadingPurchase && (
+        <ReviewForm
+          productId={String(id)}
+          userToken={userData.token}
+          existingRating={rating}
+          hasPurchased={hasPurchased}
+        />
+      )}
     </div>
   );
 };
