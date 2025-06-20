@@ -7,6 +7,9 @@ import { useRouter } from "next/navigation";
 import { IProduct } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import ToggleProductVisibilityButton from "./VisibilityButton/ToggleProductVisibilityButtonProps";
+import QuickPriceEditor from "./Adminproduct/QuickPriceEditor";
+import QuickCategoryEditor from "./Adminproduct/QuickCategoryEditor";
+
 
 interface CardListProps {
   sort?: string;
@@ -98,15 +101,28 @@ const CardList: React.FC<CardListProps> = ({
             )}
             {/* Botón de visibilidad solo para admin */}
             {userData?.user?.isAdmin && (
-              <div className="mt-2 flex justify-center">
-                <ToggleProductVisibilityButton
-                  productId={product.id}
-                  isActive={product.isActive}
-                  token={userData.token}
-                  onToggle={fetchProducts} // 🔄 Refresca lista al cambiar visibilidad
-                />
-              </div>
-            )}
+  <div className="mt-2 flex flex-col items-center gap-2">
+    <ToggleProductVisibilityButton
+      productId={product.id}
+      isActive={product.isActive}
+      token={userData.token}
+      onToggle={fetchProducts}
+    />
+    <QuickPriceEditor
+      productId={product.id}
+      currentPrice={product.price}
+      token={userData.token}
+      onSuccess={fetchProducts}
+    />
+    <QuickCategoryEditor
+  productId={product.id}
+  currentCategories={product.categories.map((c) => c.name)}
+  token={userData.token}
+  onSuccess={fetchProducts}
+/>
+  </div>
+)}
+
           </div>
         ))
       ) : (
