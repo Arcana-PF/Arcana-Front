@@ -8,12 +8,11 @@ import { createPaypalOrder, initiatePaypalOrder } from "@/utils/Orders.helper";
 
 const CheckoutComponent: React.FC = () => {
   const { cart, totalPrice } = useCart();
-  const { userData } = useAuth(); // Con middleware, userData siempre está definido
+  const { userData } = useAuth();
   const [orderId, setOrderId] = useState<string>("");
 
   const handlePayPalCheckout = async () => {
     try {
-      // Solicita confirmación al usuario
       const confirmPayment = await Swal.fire({
         title: "Confirmar pago",
         text: `Vas a pagar un total de $${totalPrice.toFixed(2)} MXN. ¿Deseas continuar?`,
@@ -24,10 +23,11 @@ const CheckoutComponent: React.FC = () => {
         reverseButtons: true,
         allowOutsideClick: false,
       });
+
       if (!confirmPayment.isConfirmed) return;
 
-      // Llamada al endpoint para crear la orden en PayPal
       const createResult = await createPaypalOrder(cart, userData!.token);
+
       if (!createResult.success) {
         throw new Error(
           typeof createResult.error === "string"
@@ -35,14 +35,18 @@ const CheckoutComponent: React.FC = () => {
             : "Error desconocido al crear la orden"
         );
       }
-      setOrderId(createResult.orderId);
-      console.log("Order created:", createResult.orderId);
 
-      // Llamada al endpoint para iniciar la orden y obtener redirectUrl
-      const initiateResult = await initiatePaypalOrder(createResult.orderId, userData!.token);
-      console.log("Initiate result:", initiateResult);
+      const { orderId: paypalOrderId, localOrderId } = createResult;
 
-      // Verifica que la respuesta contenga redirectUrl
+      if (!localOrderId) {
+        throw new Error("El backend no devolvió localOrderId");
+      }
+
+      setOrderId(paypalOrderId);
+
+      // ✅ Usar localOrderId para iniciar la orden (NO el paypalOrderId)
+      const initiateResult = await initiatePaypalOrder(localOrderId, userData!.token);
+
       if (!initiateResult.success || !initiateResult.redirectUrl) {
         throw new Error(
           typeof initiateResult.error === "string"
@@ -51,16 +55,22 @@ const CheckoutComponent: React.FC = () => {
         );
       }
 
-      // Muestra alerta con botón: al hacer clic, redirige a PayPal
+      // ✅ Agregar localOrderId a la redirección final
+      const separator = initiateResult.redirectUrl.includes("?") ? "&" : "?";
+      const finalRedirectUrl = `${initiateResult.redirectUrl}${separator}localOrderId=${localOrderId}`;
+
+      // Logs útiles para verificar redirección y localOrderId
+      console.log("🔗 Redirigiendo a:", finalRedirectUrl);
+      console.log("🧠 localOrderId en redirección:", localOrderId);
+
       await Swal.fire({
         title: "Pago iniciado",
         text: "Haz clic en el botón para continuar a PayPal.",
         icon: "info",
-        showCancelButton: false,
         confirmButtonText: "Ir a PayPal",
       }).then((result) => {
         if (result.isConfirmed) {
-          window.location.href = initiateResult.redirectUrl;
+          window.location.href = finalRedirectUrl;
         }
       });
     } catch (error) {
@@ -82,7 +92,7 @@ const CheckoutComponent: React.FC = () => {
       >
         <span>Pagar con PayPal</span>
       </button>
-      {orderId && <p>Orden creada con ID: {orderId}</p>}
+      {orderId && <p>Orden creada con PayPal ID: {orderId}</p>}
     </div>
   );
 };
