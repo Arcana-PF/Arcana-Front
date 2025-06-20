@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { IProduct } from "@/types";
 import { useCart } from "@/context/CartContext";
-import { Heart, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import Swal from "sweetalert2";
 import Rating from "../Rating/Rating";
 
@@ -17,7 +17,6 @@ const ProductDetail: React.FC<IProduct> = ({
   price,
   categories,
   rating,
-  onAddToFavorites,
 }) => {
   const { userData } = useAuth();
   const { addToCart } = useCart();
@@ -89,16 +88,6 @@ const ProductDetail: React.FC<IProduct> = ({
           <Rating value={rating} />
         </div>
 
-        {/* Botón de favoritos */}
-        <button
-          className="absolute top-3 right-3 p-1.5 bg-white/80 rounded-full backdrop-blur-sm hover:bg-white transition-colors shadow-sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddToFavorites?.();
-          }}
-        >
-          <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
-        </button>
       </div>
 
       {/* Descripción y detalles */}

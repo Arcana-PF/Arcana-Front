@@ -41,6 +41,7 @@ const LoginComponent = () => {
             <p className="text-gray-300 text-sm">Ingresar al Círculo Arcano</p>
           </div>
 
+
           <Formik
         initialValues={{ email: "", password: "" }}
         validate={validateLoginForm}

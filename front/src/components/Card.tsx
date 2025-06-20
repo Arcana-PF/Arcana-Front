@@ -1,7 +1,7 @@
 'use client';
 import React from "react";
 import { IProduct } from "@/types";
-import { Heart, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
@@ -11,7 +11,6 @@ const APIURL = process.env.NEXT_PUBLIC_API_URL;
 
 interface ICardProps extends IProduct {
   rating?: number;
-  onAddToFavorites?: () => void;
   onClick?: () => void;
 }
 
@@ -24,7 +23,6 @@ const Card: React.FC<ICardProps> = ({
   categories,
   stock,
   rating,
-  onAddToFavorites,
   onClick
 }) => {
   const { userData } = useAuth();
@@ -145,16 +143,6 @@ const Card: React.FC<ICardProps> = ({
           <Rating value={rating} />
         </div>
 
-        {/* Botón de favoritos */}
-        <button
-          className="absolute top-3 right-3 p-1.5 bg-white/80 rounded-full backdrop-blur-sm hover:bg-white transition-colors shadow-sm z-20 cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddToFavorites?.();
-          }}
-        >
-          <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
-        </button>
       </div>
 
       {/* Contenido del card */}
