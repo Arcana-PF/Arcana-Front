@@ -25,13 +25,11 @@ interface InitiateOrderResult {
 // Obtener todas las órdenes
 export async function getOrders(token: string) {
   if (!APIURL) {
-    console.error("API URL is not defined");
     return { success: false, error: "API URL missing" };
   }
 
   try {
-    const response = await fetch(`${APIURL}/orders`, {
-      method: "GET",
+    const response = await fetch(`${APIURL}/orders/myOrders`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -40,17 +38,15 @@ export async function getOrders(token: string) {
 
     if (!response.ok) {
       const errorMessage = await response.json().catch(() => "Unknown error");
-      console.error(`Error ${response.status}:`, errorMessage);
       return { success: false, error: errorMessage };
     }
 
     const data = await response.json();
     return { success: true, data };
   } catch (error: unknown) {
-    console.error("Unexpected error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unexpected error occurred",
+      error: error instanceof Error ? error.message : "Unexpected error",
     };
   }
 }
