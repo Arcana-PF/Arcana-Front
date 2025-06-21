@@ -112,3 +112,16 @@ export interface ApiResponse {
     id: string;
   };
 }
+
+export interface IOrderItem {
+  product: { id: string };
+}
+
+export interface IOrderDetail {
+  items: IOrderItem[];
+}
+
+export interface IFullOrder {
+  id: string;
+  orderDetail: IOrderDetail;
+}
