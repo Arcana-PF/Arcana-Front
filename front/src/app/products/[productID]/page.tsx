@@ -1,8 +1,18 @@
+// app/products/[productID]/page.tsx
+
 import ProductDetail from "@/components/ui/ProductDetail";
 import { getProductsById } from "@/utils/product.helper";
 
-const DetailProduct = async ({ params }: { params: { productID: string } }) => {
-  const productID = params.productID;
+interface Params {
+  productID: string;
+}
+
+const DetailProduct = async ({
+  params,
+}: {
+  params: Promise<Params>;
+}) => {
+  const { productID } = await params;
 
   try {
     const product = await getProductsById(productID);
@@ -12,7 +22,10 @@ const DetailProduct = async ({ params }: { params: { productID: string } }) => {
       </div>
     );
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Ha ocurrido un error desconocido";
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Ha ocurrido un error desconocido";
 
     return (
       <div className="min-h-screen w-full flex items-center justify-center">
