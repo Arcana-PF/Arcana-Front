@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { IProduct } from "@/types";
+import { IProduct, IFullOrder, IOrderItem } from "@/types";
 import Rating from "../Rating/Rating";
 import ReviewForm from "@/components/Review/ReviewFormProps";
 import { ShoppingCart } from "lucide-react";
@@ -12,7 +12,13 @@ import { useRouter } from "next/navigation";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const ProductDetail: React.FC<IProduct> = ({
-  id, name, imgUrl, description, stock, price, rating,
+  id,
+  name,
+  imgUrl,
+  description,
+  stock,
+  price,
+  rating,
 }) => {
   const { userData } = useAuth();
   const router = useRouter();
@@ -49,8 +55,10 @@ const ProductDetail: React.FC<IProduct> = ({
         color: "#fff",
         iconColor: "#facc15",
       });
-    } catch (e: any) {
-      Swal.fire("Error", e.message || "No se pudo agregar", "error");
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error ? e.message : "No se pudo agregar";
+      Swal.fire("Error", message, "error");
     }
   };
 
@@ -63,17 +71,15 @@ const ProductDetail: React.FC<IProduct> = ({
           headers: { Authorization: `Bearer ${userData.token}` },
         });
 
-        const orders = await res.json();
-        console.log("📦 Órdenes recibidas:", orders);
+        const orders = (await res.json()) as IFullOrder[];
 
-        const found = orders.some((order: any) =>
-          order?.orderDetail?.items?.some(
-            (item: any) => String(item?.product?.id) === String(id)
+        const found = orders.some((order) =>
+          order.orderDetail.items.some((item: IOrderItem) =>
+            String(item.product.id) === String(id)
           )
         );
 
         setHasPurchased(found);
-        console.log("✅ Producto comprado:", found);
       } catch (err) {
         console.error("❌ Error verificando compra:", err);
         setHasPurchased(false);
@@ -116,9 +122,10 @@ const ProductDetail: React.FC<IProduct> = ({
           <button
             onClick={handleAddToCart}
             disabled={stock <= 0}
-            className={`p-3 rounded-lg text-white ${
-              stock > 0 ? "bg-gradient-to-r from-yellow-500 to-yellow-600 hover:opacity-80" : "bg-gray-300"
-            }`}
+            className={`p-3 rounded-lg text-white ${stock > 0
+                ? "bg-gradient-to-r from-yellow-500 to-yellow-600 hover:opacity-80"
+                : "bg-gray-300"
+              }`}
           >
             <ShoppingCart className="w-5 h-5 inline-block" />
             <span className="ml-2">Agregar</span>
